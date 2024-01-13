@@ -76,7 +76,9 @@ resources:
             Value: ${self:service}-${self:provider.stage}
     KubernetesClusterInternetGatewayToInternetRoute:
       Type: AWS::EC2::Route
-      DependsOn: KubernetesClusterInternetGateway
+      DependsOn:
+        - KubernetesClusterInternetGateway
+        - KubernetesClusterInternetGatewayAttachment
       Properties:
         RouteTableId: !Ref KubernetesClusterInternetGatewayRouteTable
         DestinationCidrBlock: 0.0.0.0/0

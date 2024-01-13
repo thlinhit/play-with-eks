@@ -27,6 +27,8 @@ functions:
 
 resources:
   Resources:
+
+    # VPC Setup
     KubernetesClusterVPC:
       Type: AWS::EC2::VPC
       Properties:
@@ -89,3 +91,76 @@ resources:
       Properties:
         RouteTableId: !Ref KubernetesClusterInternetGatewayRouteTable
         SubnetId: !Ref KubernetesClusterSubnetB
+
+    # SECURITY
+    EksKubernetesServiceRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: EksKubernetesServiceRole
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - eks.amazonaws.com
+              Action:
+                - sts:AssumeRole
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/AmazonEKSClusterPolicy'
+          - 'arn:aws:iam::aws:policy/AmazonEKSServicePolicy'
+    KubernetesClusterMasterSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: Allow EKS Cluster communication with worker nodes
+        VpcId: !Ref KubernetesClusterVPC
+#        SecurityGroupEgress:
+#          - IpProtocol: -1
+#            fromPort: -1
+#            toPort: -1
+#            CidrIp: 0.0.0.0/0
+        Tags:
+          - Key: Name
+            Value: ${self:service}-${self:provider.stage}
+
+    # OPTIONAL: Allow inbound traffic from your local workstation external IP
+    #           to the Kubernetes. You will need to replace A.B.C.D below with
+    #           your real IP. Services like icanhazip.com can help you find this.
+#    KubernetesClusterMasterFromWorkstationSecurityGroupRule:
+#      Type: AWS::EC2::SecurityGroupIngress
+#      Properties:
+#        CidrIp: A.B.C.D/32
+#        # CidrIp: 138.68.101.60/32
+#        Description: Allow workstation to communicate with the EKS cluster API Server
+#        FromPort: 443
+#        IpProtocol: tcp
+#        ToPort: 443
+#        GroupId:
+#          Ref: KubernetesClusterMasterSecurityGroup
+
+    # EKS
+    KubernetesCluster:
+      Type: AWS::EKS::Cluster
+      Properties:
+        Name: ${self:service}-${self:provider.stage}
+        ResourcesVpcConfig:
+          SecurityGroupIds:
+            - !Ref KubernetesClusterMasterSecurityGroup
+          SubnetIds:
+            - !Ref KubernetesClusterSubnetA
+            - !Ref KubernetesClusterSubnetB
+        RoleArn: !GetAtt EksKubernetesServiceRole.Arn
+        Version: "1.25"
+
+  Outputs:
+    KubernetesClusterName:
+      Description: "EKS Cluster Name"
+      Value: !Ref KubernetesCluster
+    KubernetesClusterEndpoint:
+      Description: Endpoint for your Kubernetes API server
+      Value:
+        Fn::GetAtt: [ KubernetesCluster, Endpoint ]
+    KubernetesClusterCertificateAuthorityData:
+      Description: Certificate authority data for your Kubernetes API server
+      Value:
+        Fn::GetAtt: [ KubernetesCluster, CertificateAuthorityData ]

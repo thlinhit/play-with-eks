@@ -28,7 +28,7 @@ AWS_PROFILE=stag sls products:deploy --stage=dev
 ```
 
 
-# After deploying EKS Cluster
+## After deploying EKS Cluster
 ### Update Kube config
 As soon as Kubernetes cluster deployment finishes, we need to create ~/.kube/config file, with the following command (please, use the latest awscli):
 ```bash
@@ -57,3 +57,9 @@ kubectl apply -f aws-auth-cm.yaml && rm aws-auth-cm.yaml
 ```bash
 AWS_PROFILE=acloudguru aws ssm get-parameter --name /aws/service/eks/optimized-ami/1.25/amazon-linux-2/recommended/image_id --region us-east-1 --query "Parameter.Value" --output text;
 ```
+
+
+
+---
+## Resources
+- https://github.com/andreivmaksimov/aws-eks-spot-instances-serverless-framework-demo/blob/part2/upload_video/upload_video.py

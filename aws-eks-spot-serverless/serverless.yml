@@ -111,6 +111,7 @@ resources:
         ManagedPolicyArns:
           - 'arn:aws:iam::aws:policy/AmazonEKSClusterPolicy'
           - 'arn:aws:iam::aws:policy/AmazonEKSServicePolicy'
+    # To protect EKS Master Management Port
     KubernetesClusterMasterSecurityGroup:
       Type: AWS::EC2::SecurityGroup
       Properties:
@@ -128,17 +129,17 @@ resources:
     # OPTIONAL: Allow inbound traffic from your local workstation external IP
     #           to the Kubernetes. You will need to replace A.B.C.D below with
     #           your real IP. Services like icanhazip.com can help you find this.
-#    KubernetesClusterMasterFromWorkstationSecurityGroupRule:
-#      Type: AWS::EC2::SecurityGroupIngress
-#      Properties:
+    KubernetesClusterMasterFromWorkstationSecurityGroupRule:
+      Type: AWS::EC2::SecurityGroupIngress
+      Properties:
 #        CidrIp: A.B.C.D/32
-#        # CidrIp: 138.68.101.60/32
-#        Description: Allow workstation to communicate with the EKS cluster API Server
-#        FromPort: 443
-#        IpProtocol: tcp
-#        ToPort: 443
-#        GroupId:
-#          Ref: KubernetesClusterMasterSecurityGroup
+        CidrIp: 104.28.119.144/32
+        Description: Allow workstation to communicate with the EKS cluster API Server
+        FromPort: 443
+        IpProtocol: tcp
+        ToPort: 443
+        GroupId:
+          Ref: KubernetesClusterMasterSecurityGroup
 
     # EKS
     KubernetesCluster:

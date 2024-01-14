@@ -262,6 +262,64 @@ resources:
                     - autoscaling:TerminateInstanceInAutoScalingGroup
                   Resource: '*'
 
+    # we need to describe AWS::IAM::InstanceProfile to provide EKS Nodes with appropriate permissions
+    NodeInstanceProfile:
+      Type: AWS::IAM::InstanceProfile
+      Properties:
+        Path: /
+        Roles:
+          - !Ref NodeInstanceRole
+    NodeSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: Security group for all nodes in the EKS cluster
+        VpcId: !Ref KubernetesClusterVPC
+        Tags:
+          -
+            Key: Name
+            Value: ${self:service}-${self:provider.stage}
+
+    NodeSecurityGroupIngress:
+      Type: AWS::EC2::SecurityGroupIngress
+      DependsOn: NodeSecurityGroup
+      Properties:
+        Description: Allow node to communicate with each other
+        GroupId: !Ref NodeSecurityGroup
+        SourceSecurityGroupId: !Ref NodeSecurityGroup
+        IpProtocol: '-1'
+        FromPort: 0
+        ToPort: 65535
+    NodeSecurityGroupFromWorkstationIngress:
+      Type: AWS::EC2::SecurityGroupIngress
+      DependsOn: NodeSecurityGroup
+      Properties:
+        Description: Allow workstation to connect to EC2 nodes (for debugging)
+        GroupId: !Ref NodeSecurityGroup
+        IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        CidrIp: 104.28.119.144/32
+    NodeSecurityGroupFromControlPlaneIngress:
+      Type: AWS::EC2::SecurityGroupIngress
+      DependsOn: NodeSecurityGroup
+      Properties:
+        Description: Allow worker Kubelets and pods to receive communication from the cluster control plane
+        GroupId: !Ref NodeSecurityGroup
+        SourceSecurityGroupId: !Ref KubernetesClusterMasterSecurityGroup
+        IpProtocol: tcp
+        FromPort: 1025
+        ToPort: 65535
+    KubernetesClusterMasterSecurityGroupIngressFromNodes:
+      Type: AWS::EC2::SecurityGroupIngress
+      DependsOn: NodeSecurityGroup
+      Properties:
+        Description: Allow pods to communicate with the cluster API Server
+        GroupId: !Ref KubernetesClusterMasterSecurityGroup
+        SourceSecurityGroupId: !Ref NodeSecurityGroup
+        IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+
   Outputs:
     KubernetesClusterName:
       Description: "EKS Cluster Name"

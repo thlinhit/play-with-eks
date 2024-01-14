@@ -27,7 +27,9 @@ functions:
 
 resources:
   Resources:
-
+    ################
+    #  EKS
+    ################
     # VPC Setup
     KubernetesClusterVPC:
       Type: AWS::EC2::VPC
@@ -117,11 +119,11 @@ resources:
       Properties:
         GroupDescription: Allow EKS Cluster communication with worker nodes
         VpcId: !Ref KubernetesClusterVPC
-#        SecurityGroupEgress:
-#          - IpProtocol: -1
-#            fromPort: -1
-#            toPort: -1
-#            CidrIp: 0.0.0.0/0
+        #        SecurityGroupEgress:
+        #          - IpProtocol: -1
+        #            fromPort: -1
+        #            toPort: -1
+        #            CidrIp: 0.0.0.0/0
         Tags:
           - Key: Name
             Value: ${self:service}-${self:provider.stage}
@@ -132,7 +134,7 @@ resources:
     KubernetesClusterMasterFromWorkstationSecurityGroupRule:
       Type: AWS::EC2::SecurityGroupIngress
       Properties:
-#        CidrIp: A.B.C.D/32
+        #        CidrIp: A.B.C.D/32
         CidrIp: 104.28.119.144/32
         Description: Allow workstation to communicate with the EKS cluster API Server
         FromPort: 443
@@ -141,7 +143,7 @@ resources:
         GroupId:
           Ref: KubernetesClusterMasterSecurityGroup
 
-    # EKS
+    # Create Cluster
     KubernetesCluster:
       Type: AWS::EKS::Cluster
       Properties:
@@ -155,6 +157,111 @@ resources:
         RoleArn: !GetAtt EksKubernetesServiceRole.Arn
         Version: "1.25"
 
+
+    ################
+    #  WORKER NODE
+    ################
+    NodeInstanceRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: NodeInstanceRole
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - ec2.amazonaws.com
+              Action:
+                - sts:AssumeRole
+        Path: "/"
+        Policies:
+          - PolicyName: node
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - ec2:Describe*
+                    - ecr:GetAuthorizationToken
+                    - ecr:BatchCheckLayerAvailability
+                    - ecr:GetDownloadUrlForLayer
+                    - ecr:GetRepositoryPolicy
+                    - ecr:DescribeRepositories
+                    - ecr:ListImages
+                    - ecr:DescribeImages
+                    - ecr:BatchGetImage
+                  Resource: '*'
+          - PolicyName: cni
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - ec2:DescribeNetworkInterfaces
+                    - ec2:DescribeInstances
+                    - ec2:AttachNetworkInterface
+                    - ec2:CreateNetworkInterface
+                    - ec2:DeleteNetworkInterface
+                    - ec2:DetachNetworkInterface
+                    - ec2:ModifyNetworkInterfaceAttribute
+                    - ec2:AssignPrivateIpAddresses
+                    - tag:TagResources
+                  Resource: '*'
+          - PolicyName: eks
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - eks:DescribeCluster
+                  Resource: '*'
+          - PolicyName: s3-management
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - s3:PutObject
+                    - s3:GetObject
+                    - s3:ListBucket
+                    - s3:DeleteObject
+                  Resource:
+                    - '*' # Recheck
+                - Effect: Allow
+                  Action:
+                    - s3:HeadBucket
+                  Resource:
+                    - '*'
+          - PolicyName: ClusterAutoscaler
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - ec2:DescribeRegions
+                    - ec2:DescribeInstances
+                  Resource: '*'
+                - Effect: Allow
+                  Action:
+                    - ecr:GetAuthorizationToken
+                    - ecr:BatchCheckLayerAvailability
+                    - ecr:GetDownloadUrlForLayer
+                    - ecr:GetRepositoryPolicy
+                    - ecr:DescribeRepositories
+                    - ecr:ListImages
+                    - ecr:BatchGetImage
+                  Resource: '*'
+                - Effect: Allow
+                  Action:
+                    - autoscaling:DescribeAutoScalingGroups
+                    - autoscaling:DescribeAutoScalingInstances
+                    - autoscaling:DescribeLaunchConfigurations
+                    - autoscaling:SetDesiredCapacity
+                    - autoscaling:DescribeTags
+                    - autoscaling:TerminateInstanceInAutoScalingGroup
+                  Resource: '*'
+
   Outputs:
     KubernetesClusterName:
       Description: "EKS Cluster Name"
@@ -165,5 +272,7 @@ resources:
         Fn::GetAtt: [ KubernetesCluster, Endpoint ]
     KubernetesClusterCertificateAuthorityData:
       Description: Certificate authority data for your Kubernetes API server
-      Value:
-        Fn::GetAtt: [ KubernetesCluster, CertificateAuthorityData ]
+      Value: !GetAtt KubernetesCluster.CertificateAuthorityData
+    KubernetesClusterNodesRoleArn:
+      Description: 'EKS Cluster Nodes Role Arn'
+      Value: !GetAtt NodeInstanceRole.Arn

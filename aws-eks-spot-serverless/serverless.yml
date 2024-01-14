@@ -327,7 +327,7 @@ resources:
         AssociatePublicIpAddress: true # https://docs.aws.amazon.com/eks/latest/userguide/eks-optimized-ami.html
         IamInstanceProfile: !Ref NodeInstanceProfile
         ImageId: ami-0704d02231282bbe5
-        InstanceType: t2.nano
+        InstanceType: m3.medium
 #        KeyName: 'Lenovo T410'
         SpotPrice: 1
         SecurityGroups:

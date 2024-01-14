@@ -34,5 +34,5 @@ As soon as Kubernetes cluster deployment finishes, we need to create ~/.kube/con
 ```bash
 AWS_PROFILE=acloudguru aws eks update-kubeconfig --region us-east-1 --name aws-eks-spot-serverless-dev
 ```
-
-**ATTENTION**: if you can not connect to the cluster please double check the ip address in KubernetesClusterMasterFromWorkstationSecurityGroupRule section of serverless.yml
+* `aws-eks-spot-serverless-dev` is the cluster name
+**ATTENTION**: if you can not connect to the cluster please double-check the ip address in KubernetesClusterMasterFromWorkstationSecurityGroupRule section of serverless.yml

@@ -328,7 +328,6 @@ resources:
         IamInstanceProfile: !Ref NodeInstanceProfile
         ImageId: ami-0704d02231282bbe5
         InstanceType: m3.medium
-#        KeyName: 'Lenovo T410'
         SpotPrice: 1
         SecurityGroups:
           - !Ref NodeSecurityGroup

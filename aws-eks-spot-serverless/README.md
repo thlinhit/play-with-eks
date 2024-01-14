@@ -50,3 +50,10 @@ Replace nodearn in the file by the value of `KubernetesClusterNodesRoleArn`
 ```bash
 kubectl apply -f aws-auth-cm.yaml && rm aws-auth-cm.yaml
 ```
+
+
+
+### Get Iam
+```bash
+AWS_PROFILE=acloudguru aws ssm get-parameter --name /aws/service/eks/optimized-ami/1.25/amazon-linux-2/recommended/image_id --region us-east-1 --query "Parameter.Value" --output text;
+```

@@ -206,6 +206,7 @@ resources:
                     - ec2:DetachNetworkInterface
                     - ec2:ModifyNetworkInterfaceAttribute
                     - ec2:AssignPrivateIpAddresses
+                    - ec2:CreateTags
                     - tag:TagResources
                   Resource: '*'
           - PolicyName: eks

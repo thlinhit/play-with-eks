@@ -13,14 +13,14 @@ functions:
     handler: upload_video.handler
     events:
       - s3:
-          bucket: "aws-eks-spot-serverless-dev-uploads"
+          bucket: "aws-eks-spot-serverless-dev-uploads-v1"
           events:
             - s3:ObjectCreated:*
   thumbnailUploadLambdaFunction:
     handler: upload_thumbnail.handler
     events:
       - s3:
-          bucket: "aws-eks-spot-serverless-dev-thumbnails"
+          bucket: "aws-eks-spot-serverless-dev-thumbnails-v1"
           events:
             - s3:ObjectCreated:*
 
@@ -327,7 +327,7 @@ resources:
         AssociatePublicIpAddress: true # https://docs.aws.amazon.com/eks/latest/userguide/eks-optimized-ami.html
         IamInstanceProfile: !Ref NodeInstanceProfile
         ImageId: ami-0704d02231282bbe5
-        InstanceType: m3.medium
+        InstanceType: t2.small
         SpotPrice: 1
         SecurityGroups:
           - !Ref NodeSecurityGroup

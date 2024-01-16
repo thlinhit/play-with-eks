@@ -13,14 +13,14 @@ functions:
     handler: upload_video.handler
     events:
       - s3:
-          bucket: "aws-eks-spot-serverless-dev-uploads"
+          bucket: "aws-eks-spot-serverless-dev-uploads-linh"
           events:
             - s3:ObjectCreated:*
   thumbnailUploadLambdaFunction:
     handler: upload_thumbnail.handler
     events:
       - s3:
-          bucket: "aws-eks-spot-serverless-dev-thumbnails"
+          bucket: "aws-eks-spot-serverless-dev-thumbnails-linh"
           events:
             - s3:ObjectCreated:*
 

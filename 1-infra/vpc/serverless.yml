@@ -125,6 +125,10 @@ resources:
     InternetGateway:
       Type: AWS::EC2::InternetGateway
       DependsOn: MyVpc
+      Properties:
+        Tags:
+          - Key: Name
+            Value: ${self:service}-${self:provider.stage}-gw
 
     GatewayAttachment:
       Type: AWS::EC2::VPCGatewayAttachment

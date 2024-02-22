@@ -140,6 +140,9 @@ resources:
       Type: AWS::EC2::RouteTable
       Properties:
         VpcId: !Ref MyVpc
+        Tags:
+          - Key: Name
+            Value: ${self:service}-${self:provider.stage}
 
     PublicRoute:
       Type: AWS::EC2::Route

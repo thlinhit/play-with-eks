@@ -1,0 +1,93 @@
+service: ${self:custom.servicePrefix}-eks
+frameworkVersion: '3'
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+  servicePrefix: thlinh
+
+provider:
+  stage: local
+  region: us-east-1
+  name: aws
+
+#############
+# RESOURCES #
+#############
+resources:
+  Parameters:
+    EKSVersion:
+      Type: String
+      Default: 1.26
+    SubnetOne:
+      Type: String
+      Default: ${param:subnetOne}
+    SubnetTwo:
+      Type: String
+      Default: ${param:subnetTwo}
+    SubnetThree:
+      Type: String
+      Default: ${param:subnetThree}
+    InfrastructureBaseSecurityGroup:
+      Type: String
+      Default: ${param:infrastructureBaseSecurityGroup}
+    ManagedSgTxToolingBaseSecurityGroup:
+      Type: String
+      Default: ${param:managedSgTxToolingBaseSecurityGroup}
+    AmazonLinuxAMIID: # retreived from the SSM Parameter Store in the current region
+      Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+      Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64
+  Resources:
+    EksKubernetesServiceRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: EksKubernetesServiceRole
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - eks.amazonaws.com
+              Action:
+                - sts:AssumeRole
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/AmazonEKSClusterPolicy'
+          - 'arn:aws:iam::aws:policy/AmazonEKSServicePolicy'
+
+    KubernetesCluster:
+      Type: AWS::EKS::Cluster
+      Properties:
+        Name: ${self:service}-${self:provider.stage}-eks
+        ResourcesVpcConfig:
+          SecurityGroupIds:
+            - !Ref InfrastructureBaseSecurityGroup
+            - !Ref ManagedSgTxToolingBaseSecurityGroup
+          SubnetIds:
+            - !Ref SubnetOne
+            - !Ref SubnetTwo
+            - !Ref SubnetThree
+        RoleArn: !GetAtt EksKubernetesServiceRole.Arn
+        Version: !Ref EKSVersion
+
+#  Outputs:
+#    vpcId:
+#      Value: !Ref MyVpc
+#    privateSubnetOneId:
+#      Value: !Ref PrivateSubnetOne
+#    privateSubnetTwoId:
+#      Value: !Ref PrivateSubnetTwo
+#    privateSubnetThreeId:
+#      Value: !Ref PrivateSubnetThree
+#    publicSubnetOneId:
+#      Value: !Ref PublicSubnetOne
+#    publicSubnetTwoId:
+#      Value: !Ref PublicSubnetTwo
+#    publicSubnetThreeId:
+#      Value: !Ref PublicSubnetThree
+#    managedSgTxToolingBaseSecurityGroup:
+#      Value: !Ref ManagedSgTxToolingBaseSecurityGroup
+#    infrastructureBaseSecurityGroupId:
+#      Value: !Ref ManagedSgTxInfrastructureBaseSecurityGroup
+#    privateRouteTableId:
+#      Value: !Ref PrivateRouteTable

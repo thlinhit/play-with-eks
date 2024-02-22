@@ -9,3 +9,12 @@ services:
       publicSubnetOneCidr: '10.90.64.0/24'
       publicSubnetTwoCidr: '10.90.65.0/24'
       publicSubnetThreeCidr: '10.90.66.0/24'
+
+  eks:
+    path: eks
+    params:
+      subnetOne: ${vpc.publicSubnetOneId}
+      subnetTwo: ${vpc.publicSubnetTwoId}
+      subnetThree: ${vpc.publicSubnetThreeId}
+      infrastructureBaseSecurityGroup: ${vpc.infrastructureBaseSecurityGroupId}
+      managedSgTxToolingBaseSecurityGroup: ${vpc.managedSgTxToolingBaseSecurityGroup}

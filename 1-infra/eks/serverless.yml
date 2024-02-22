@@ -58,14 +58,45 @@ resources:
           - 'arn:aws:iam::aws:policy/AmazonEKSClusterPolicy'
           - 'arn:aws:iam::aws:policy/AmazonEKSServicePolicy'
 
+    # To protect EKS Master Management Port
+    KubernetesClusterMasterSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: Allow EKS Cluster communication with worker nodes
+        VpcId: !Ref vpcId
+        #        SecurityGroupEgress:
+        #          - IpProtocol: -1
+        #            fromPort: -1
+        #            toPort: -1
+        #            CidrIp: 0.0.0.0/0
+        Tags:
+          - Key: Name
+            Value: ${self:service}-${self:provider.stage}
+
+    # OPTIONAL: Allow inbound traffic from your local workstation external IP
+    #           to the Kubernetes. You will need to replace A.B.C.D below with
+    #           your real IP. Services like icanhazip.com can help you find this.
+#    KubernetesClusterMasterFromWorkstationSecurityGroupRule:
+#      Type: AWS::EC2::SecurityGroupIngress
+#      Properties:
+#        #        CidrIp: A.B.C.D/32
+#        CidrIp: 104.28.119.144/32
+#        Description: Allow workstation to communicate with the EKS cluster API Server
+#        FromPort: 443
+#        IpProtocol: tcp
+#        ToPort: 443
+#        GroupId:
+#          Ref: KubernetesClusterMasterSecurityGroup
+
     KubernetesCluster:
       Type: AWS::EKS::Cluster
       Properties:
         Name: ${self:service}-${self:provider.stage}-eks
         ResourcesVpcConfig:
           SecurityGroupIds:
-            - !Ref InfrastructureBaseSecurityGroup
-            - !Ref ManagedSgTxToolingBaseSecurityGroup
+#            - !Ref InfrastructureBaseSecurityGroup
+#            - !Ref ManagedSgTxToolingBaseSecurityGroup
+            - !Ref KubernetesClusterMasterSecurityGroup
           SubnetIds:
             - !Ref SubnetOne
             - !Ref SubnetTwo
@@ -225,7 +256,7 @@ resources:
       Properties:
         Description: Allow worker Kubelets and pods to receive communication from the cluster control plane
         GroupId: !Ref NodeSecurityGroup
-        SourceSecurityGroupId: !Ref ManagedSgTxToolingBaseSecurityGroup
+        SourceSecurityGroupId: !Ref KubernetesClusterMasterSecurityGroup
         IpProtocol: tcp
         FromPort: 1025
         ToPort: 65535
@@ -234,7 +265,7 @@ resources:
       DependsOn: NodeSecurityGroup
       Properties:
         Description: Allow pods to communicate with the cluster API Server
-        GroupId: !Ref ManagedSgTxToolingBaseSecurityGroup
+        GroupId: !Ref KubernetesClusterMasterSecurityGroup
         SourceSecurityGroupId: !Ref NodeSecurityGroup
         IpProtocol: tcp
         FromPort: 443

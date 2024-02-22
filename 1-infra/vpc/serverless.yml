@@ -148,9 +148,10 @@ resources:
       Type: AWS::EC2::Route
       DependsOn: GatewayAttachment
       Properties:
-        RouteTableId: !Ref 'PublicRouteTable'
-        DestinationCidrBlock: '0.0.0.0/0'
+        RouteTableId: !Ref PublicRouteTable
+        DestinationCidrBlock: 0.0.0.0/0
         GatewayId: !Ref InternetGateway
+
     PublicSubnetOneRouteTableAssociation:
       Type: AWS::EC2::SubnetRouteTableAssociation
       Properties:

@@ -175,6 +175,13 @@ resources:
                     - autoscaling:TerminateInstanceInAutoScalingGroup
                   Resource: '*'
 
+    # we need to describe AWS::IAM::InstanceProfile to provide EKS Nodes with appropriate permissions
+    NodeInstanceProfile:
+      Type: AWS::IAM::InstanceProfile
+      Properties:
+        Path: /
+        Roles:
+          - !Ref NodeInstanceRole
 
 #  Outputs:
 #    EksCluster:

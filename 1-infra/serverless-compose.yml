@@ -13,6 +13,7 @@ services:
   eks:
     path: eks
     params:
+      vpcId: ${vpc.vpcId}
       subnetOne: ${vpc.publicSubnetOneId}
       subnetTwo: ${vpc.publicSubnetTwoId}
       subnetThree: ${vpc.publicSubnetThreeId}

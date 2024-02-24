@@ -32,7 +32,7 @@ AWS_PROFILE=stag sls products:deploy --stage=dev
 ### Update Kube config
 As soon as Kubernetes cluster deployment finishes, we need to create ~/.kube/config file, with the following command (please, use the latest awscli):
 ```bash
-AWS_PROFILE=acloudguru aws eks update-kubeconfig --region us-east-1 --name aws-eks-spot-serverless-dev
+AWS_PROFILE=acloudguru2 aws eks update-kubeconfig --region us-east-1 --name aws-eks-spot-serverless-dev
 ```
 * `aws-eks-spot-serverless-dev` is the cluster name
 **ATTENTION**: if you can not connect to the cluster please double-check the ip address in KubernetesClusterMasterFromWorkstationSecurityGroupRule section of serverless.yml

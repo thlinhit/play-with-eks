@@ -11,6 +11,13 @@ provider:
 functions:
   videoUploadLambdaFunction:
     handler: upload_video.handler
+    package:
+      include:
+        - upload_video/**
+        - .kube/**
+        - bin/**
+      exclude:
+        - ./**
     events:
       - s3:
           bucket: "aws-eks-spot-serverless-dev-uploads-linh"

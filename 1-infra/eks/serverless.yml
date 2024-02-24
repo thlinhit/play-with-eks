@@ -309,23 +309,6 @@ resources:
                        --stack  ${AWS::StackName} \
                        --resource NodeGroup  \
                        --region ${AWS::Region}
-#        UserData:
-#          Fn::Base64:
-#            Fn::Join:
-#              - ""
-#              - - "#!/bin/bash -xe\n"
-#                - "set -o xtrace"
-#                - "\n"
-#                - Fn::Join:
-#                    - " "
-#                    - - "/etc/eks/bootstrap.sh"
-#                      - Ref: KubernetesCluster
-#                - "\n"
-#                - "/opt/aws/bin/cfn-signal -e $? "
-#                - "         --stack ${self:service}-${self:provider.stage} "
-#                - "         --resource NodeGroup "
-#                - "         --region ${self:provider.region}"
-
 
     SpotNodeGroup:
       Type: AWS::AutoScaling::AutoScalingGroup

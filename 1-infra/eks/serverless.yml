@@ -40,6 +40,10 @@ resources:
     AmazonLinuxAMIID:
       Type: String
       Default: ${param:amiId}
+    SpotPrice:
+      Description: Spot Price (Only Spot market price is charged, up to max of On-Demand price. Value here is only used to prevent EC2 instance launch if Spot market price exceeds this value.)
+      Type: String
+      Default: 1
   Resources:
     EksKubernetesServiceRole:
       Type: AWS::IAM::Role
@@ -279,7 +283,7 @@ resources:
         IamInstanceProfile: !Ref NodeInstanceProfile
         ImageId: !Ref AmazonLinuxAMIID
         InstanceType: t2.small
-        SpotPrice: '1'
+        SpotPrice: !Ref SpotPrice
         SecurityGroups:
           - !Ref NodeSecurityGroup
           - !Ref InfrastructureBaseSecurityGroup

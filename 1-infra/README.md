@@ -19,6 +19,12 @@ AWS_PROFILE=acloudguru2 sls vpc:deploy
 AWS_PROFILE=acloudguru2 sls eks:deploy
 ```
 
+### Get Iam
+```bash
+EKS_VERSION=1.26
+AWS_PROFILE=acloudguru2 aws ssm get-parameter --name /aws/service/eks/optimized-ami/$EKS_VERSION/amazon-linux-2/recommended/image_id --region us-east-1 --query "Parameter.Value" --output text;
+```
+
 ----
 # After deploying EKS Cluster
 ### Update Kube config

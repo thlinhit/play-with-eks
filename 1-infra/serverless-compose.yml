@@ -20,3 +20,4 @@ services:
       subnetThree: ${vpc.publicSubnetThreeId}
       infrastructureBaseSecurityGroup: ${vpc.infrastructureBaseSecurityGroupId}
       managedSgTxToolingBaseSecurityGroup: ${vpc.managedSgTxToolingBaseSecurityGroup}
+      amiId: 'ami-0d00c9f7217e4079c'

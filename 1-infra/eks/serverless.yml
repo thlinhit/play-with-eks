@@ -37,9 +37,9 @@ resources:
     ManagedSgTxToolingBaseSecurityGroup:
       Type: String
       Default: ${param:managedSgTxToolingBaseSecurityGroup}
-    AmazonLinuxAMIID: # retreived from the SSM Parameter Store in the current region
-      Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
-      Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64
+    AmazonLinuxAMIID:
+      Type: String
+      Default: ${param:amiId}
   Resources:
     EksKubernetesServiceRole:
       Type: AWS::IAM::Role

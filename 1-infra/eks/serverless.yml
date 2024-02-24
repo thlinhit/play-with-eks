@@ -102,9 +102,10 @@ resources:
         RoleArn: !GetAtt EksKubernetesServiceRole.Arn
         Version: !Ref EKSVersion
 
-    ################
-    #  WORKER NODE
-    ################
+
+    ####################################
+    #  WORKER NODE SECURITY GROUPS
+    ####################################
     NodeInstanceRole:
       Type: AWS::IAM::Role
       Properties:
@@ -235,18 +236,16 @@ resources:
         FromPort: 0
         ToPort: 65535
 
-#    NodeSecurityGroupFromWorkstationIngress:
-#      Type: AWS::EC2::SecurityGroupIngress
-#      DependsOn: NodeSecurityGroup
-#      Properties:
-#        Description: Allow workstation to connect to EC2 nodes (for debugging)
-#        GroupId: !Ref NodeSecurityGroup
-#        IpProtocol: tcp
-#        FromPort: 22
-#        ToPort: 22
-#        CidrIp: 104.28.119.144/32
-
-
+    NodeSecurityGroupFromWorkstationIngress:
+      Type: AWS::EC2::SecurityGroupIngress
+      DependsOn: NodeSecurityGroup
+      Properties:
+        Description: Allow workstation to connect to EC2 nodes (for debugging)
+        GroupId: !Ref NodeSecurityGroup
+        IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        CidrIp: 10.90.64.0/19
 
     NodeSecurityGroupFromControlPlaneIngress:
       Type: AWS::EC2::SecurityGroupIngress
@@ -269,7 +268,77 @@ resources:
         FromPort: 443
         ToPort: 443
 
-#  Outputs:
-#    EksCluster:
-#      Description: EKS Cluster Name
-#      Value: !Ref EksCluster
+
+    ####################################
+    #  WORKER NODE INSTANCES
+    ####################################
+    SpotNodeLaunchConfig:
+      Type: AWS::AutoScaling::LaunchConfiguration
+      Properties:
+        AssociatePublicIpAddress: true # https://docs.aws.amazon.com/eks/latest/userguide/eks-optimized-ami.html
+        IamInstanceProfile: !Ref NodeInstanceProfile
+        ImageId: !Ref AmazonLinuxAMIID
+        InstanceType: t2.small
+        SpotPrice: '1'
+        SecurityGroups:
+          - !Ref NodeSecurityGroup
+          - !Ref InfrastructureBaseSecurityGroup
+          - !Ref ManagedSgTxToolingBaseSecurityGroup
+        # Refer: https://repost.aws/knowledge-center/eks-worker-nodes-cluster
+        UserData:
+          Fn::Base64:
+            Fn::Join:
+              - ""
+              - - "#!/bin/bash -xe\n"
+                - "set -o xtrace"
+                - "\n"
+                - Fn::Join:
+                    - " "
+                    - - "/etc/eks/bootstrap.sh"
+                      - Ref: KubernetesCluster
+                - "\n"
+                - "/opt/aws/bin/cfn-signal -e $? "
+                - "         --stack ${self:service}-${self:provider.stage} "
+                - "         --resource NodeGroup "
+                - "         --region ${self:provider.region}"
+
+
+    SpotNodeGroup:
+      Type: AWS::AutoScaling::AutoScalingGroup
+      Properties:
+        DesiredCapacity: 1
+        LaunchConfigurationName: !Ref SpotNodeLaunchConfig
+        MinSize: 0
+        MaxSize: 2
+        VPCZoneIdentifier:
+          - !Ref SubnetOne
+        Tags:
+          - Key: Name
+            Value: ${self:service}-${self:provider.stage}-nodes
+            PropagateAtLaunch: true
+          - Key:
+              Fn::Join:
+                - "/"
+                - - "kubernetes.io"
+                  - "cluster"
+                  - "${self:service}-${self:provider.stage}"
+            Value: 'owned'
+            PropagateAtLaunch: 'true'
+      UpdatePolicy:
+        AutoScalingRollingUpdate:
+          MinInstancesInService: 0
+          MaxBatchSize: 1
+  Outputs:
+    KubernetesClusterName:
+      Description: "EKS Cluster Name"
+      Value: !Ref KubernetesCluster
+    KubernetesClusterEndpoint:
+      Description: Endpoint for your Kubernetes API server
+      Value:
+        Fn::GetAtt: [ KubernetesCluster, Endpoint ]
+    KubernetesClusterCertificateAuthorityData:
+      Description: Certificate authority data for your Kubernetes API server
+      Value: !GetAtt KubernetesCluster.CertificateAuthorityData
+    KubernetesClusterNodesRoleArn:
+      Description: 'EKS Cluster Nodes Role Arn'
+      Value: !GetAtt NodeInstanceRole.Arn

@@ -44,6 +44,10 @@ resources:
       Description: Spot Price (Only Spot market price is charged, up to max of On-Demand price. Value here is only used to prevent EC2 instance launch if Spot market price exceeds this value.)
       Type: String
       Default: 1
+    NodeVolumeSize:
+      Type: Number
+      Description: Node volume size
+      Default: 20
   Resources:
     EksKubernetesServiceRole:
       Type: AWS::IAM::Role
@@ -289,22 +293,38 @@ resources:
           - !Ref InfrastructureBaseSecurityGroup
           - !Ref ManagedSgTxToolingBaseSecurityGroup
         # Refer: https://repost.aws/knowledge-center/eks-worker-nodes-cluster
+        BlockDeviceMappings:
+          - DeviceName: /dev/xvda
+            Ebs:
+              VolumeSize: !Ref NodeVolumeSize
+              VolumeType: gp2
+              DeleteOnTermination: true
         UserData:
           Fn::Base64:
-            Fn::Join:
-              - ""
-              - - "#!/bin/bash -xe\n"
-                - "set -o xtrace"
-                - "\n"
-                - Fn::Join:
-                    - " "
-                    - - "/etc/eks/bootstrap.sh"
-                      - Ref: KubernetesCluster
-                - "\n"
-                - "/opt/aws/bin/cfn-signal -e $? "
-                - "         --stack ${self:service}-${self:provider.stage} "
-                - "         --resource NodeGroup "
-                - "         --region ${self:provider.region}"
+            !Sub |
+              #!/bin/bash
+              set -o xtrace
+              /etc/eks/bootstrap.sh ${KubernetesCluster}
+              /opt/aws/bin/cfn-signal --exit-code $? \
+                       --stack  ${AWS::StackName} \
+                       --resource NodeGroup  \
+                       --region ${AWS::Region}
+#        UserData:
+#          Fn::Base64:
+#            Fn::Join:
+#              - ""
+#              - - "#!/bin/bash -xe\n"
+#                - "set -o xtrace"
+#                - "\n"
+#                - Fn::Join:
+#                    - " "
+#                    - - "/etc/eks/bootstrap.sh"
+#                      - Ref: KubernetesCluster
+#                - "\n"
+#                - "/opt/aws/bin/cfn-signal -e $? "
+#                - "         --stack ${self:service}-${self:provider.stage} "
+#                - "         --resource NodeGroup "
+#                - "         --region ${self:provider.region}"
 
 
     SpotNodeGroup:

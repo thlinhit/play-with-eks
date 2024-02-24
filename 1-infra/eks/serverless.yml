@@ -71,7 +71,7 @@ resources:
         #            CidrIp: 0.0.0.0/0
         Tags:
           - Key: Name
-            Value: ${self:service}-${self:provider.stage}
+            Value: ${self:service}-${self:provider.stage}-eks-master-sg
 
     # OPTIONAL: Allow inbound traffic from your local workstation external IP
     #           to the Kubernetes. You will need to replace A.B.C.D below with
@@ -94,8 +94,6 @@ resources:
         Name: ${self:service}-${self:provider.stage}-eks
         ResourcesVpcConfig:
           SecurityGroupIds:
-#            - !Ref InfrastructureBaseSecurityGroup
-#            - !Ref ManagedSgTxToolingBaseSecurityGroup
             - !Ref KubernetesClusterMasterSecurityGroup
           SubnetIds:
             - !Ref SubnetOne
@@ -224,7 +222,7 @@ resources:
         VpcId: !Ref vpcId
         Tags:
           - Key: Name
-            Value: ${self:service}-${self:provider.stage}-security-group
+            Value: ${self:service}-${self:provider.stage}-workers-sg
 
     NodeSecurityGroupIngress:
       Type: AWS::EC2::SecurityGroupIngress

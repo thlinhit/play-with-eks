@@ -10,6 +10,11 @@ aws configure --profile acloudguru2
 AWS_PROFILE=acloudguru2 sls deploy
 ```
 
+### Deploy each component
+```bash
+AWS_PROFILE=acloudguru2 sls vpc:deploy
+```
+
 ```bash
 AWS_PROFILE=acloudguru2 sls eks:deploy
 ```

@@ -13,6 +13,7 @@ services:
   eks:
     path: eks
     params:
+      eksVersion: 1.26
       vpcId: ${vpc.vpcId}
       subnetOne: ${vpc.publicSubnetOneId}
       subnetTwo: ${vpc.publicSubnetTwoId}

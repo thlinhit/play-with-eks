@@ -20,8 +20,8 @@ resources:
       Type: String
       Default: ${param:vpcId}
     EKSVersion:
-      Type: String
-      Default: 1.26
+      Type: Number
+      Default: ${param:eksVersion}
     SubnetOne:
       Type: String
       Default: ${param:subnetOne}

@@ -316,7 +316,7 @@ resources:
         DesiredCapacity: 1
         LaunchConfigurationName: !Ref SpotNodeLaunchConfig
         MinSize: 0
-        MaxSize: 2
+        MaxSize: 3
         VPCZoneIdentifier:
           - !Ref SubnetOne
         Tags:

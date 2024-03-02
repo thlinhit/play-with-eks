@@ -48,3 +48,14 @@ Replace nodearn in the file by the value of `KubernetesClusterNodesRoleArn`
 ```bash
 kubectl apply -f aws-auth-cm.yaml && rm aws-auth-cm.yaml
 ```
+
+
+---
+## Verify
+```bash
+kubectl get nodes --watch
+```
+
+```bash
+kubectl get pod --all-namespaces
+```

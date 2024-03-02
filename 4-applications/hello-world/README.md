@@ -21,3 +21,31 @@ docker tag myapi:0.0.1 851725381160.dkr.ecr.us-east-1.amazonaws.com/myapp:0.0.1
 ```bash
 docker push 851725381160.dkr.ecr.us-east-1.amazonaws.com/myapp:0.0.1
 ```
+
+```bash
+kubectl apply -f ./deploy.yaml
+```
+
+```bash
+kubectl get pod my-deployment-7f7ff984f5-6grj9 -o jsonpath={.status.hostIP}
+```
+
+Add inbound security group to allow access via port 32410
+```note
+ curl -v 3.84.122.74:32410  
+*   Trying 3.84.122.74:32410...
+* Connected to 3.84.122.74 (3.84.122.74) port 32410 (#0)
+> GET / HTTP/1.1
+> Host: 3.84.122.74:32410
+> User-Agent: curl/8.1.2
+> Accept: */*
+> 
+< HTTP/1.1 200 OK
+< date: Sat, 02 Mar 2024 07:55:06 GMT
+< server: uvicorn
+< content-length: 25
+< content-type: application/json
+< 
+* Connection #0 to host 3.84.122.74 left intact
+{"message":"Hello World"}%
+```

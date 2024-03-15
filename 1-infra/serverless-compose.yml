@@ -15,9 +15,9 @@ services:
     params:
       eksVersion: 1.26
       vpcId: ${vpc.vpcId}
-      subnetOne: ${vpc.publicSubnetOneId}
-      subnetTwo: ${vpc.publicSubnetTwoId}
-      subnetThree: ${vpc.publicSubnetThreeId}
+      subnetOne: ${vpc.privateSubnetOneId}
+      subnetTwo: ${vpc.privateSubnetTwoId}
+      subnetThree: ${vpc.privateSubnetThreeId}
       infrastructureBaseSecurityGroup: ${vpc.infrastructureBaseSecurityGroupId}
       managedSgTxToolingBaseSecurityGroup: ${vpc.managedSgTxToolingBaseSecurityGroup}
       amiId: 'ami-0d00c9f7217e4079c'

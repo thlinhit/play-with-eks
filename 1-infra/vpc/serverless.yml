@@ -264,6 +264,133 @@ resources:
         ToPort: -1
         Description: Allow self traffic
 
+    # ENDPOINTS - REQUIRED FOR PRIVATE EKS
+    S3APIEndpoint:
+      Type: AWS::EC2::VPCEndpoint
+      Properties:
+        ServiceName: !Sub "com.amazonaws.${AWS::Region}.s3"
+        VpcEndpointType: Gateway
+        RouteTableIds:
+          - !Ref PrivateRouteTable
+        VpcId: !Ref MyVpc
+#    HttpProxyEndpoint:
+#      Type: AWS::EC2::VPCEndpoint
+#      Condition: CreateProxyEndpoint
+#      Properties:
+#        ServiceName: "HttpProxyServiceName"
+#        VpcEndpointType: Interface
+#        PrivateDnsEnabled: false
+#        SecurityGroupIds:
+#          - !Ref ManagedSgTxToolingBaseSecurityGroup
+#          - !Ref ManagedSgTxInfrastructureBaseSecurityGroup
+#        SubnetIds:
+#          - !Ref PrivateSubnetOne
+#          - !Ref PrivateSubnetTwo
+#          - !Ref PrivateSubnetThree
+#        VpcId: !Ref MyVpc
+    ECRAPIEndpoint:
+      Type: AWS::EC2::VPCEndpoint
+      Properties:
+        ServiceName: !Sub "com.amazonaws.${AWS::Region}.ecr.api"
+        VpcEndpointType: Interface
+        PrivateDnsEnabled: true
+        SecurityGroupIds:
+          - !Ref ManagedSgTxToolingBaseSecurityGroup
+          - !Ref ManagedSgTxInfrastructureBaseSecurityGroup
+        SubnetIds:
+          - !Ref PrivateSubnetOne
+          - !Ref PrivateSubnetTwo
+          - !Ref PrivateSubnetThree
+        VpcId: !Ref MyVpc
+    ECRDockerEndpoint:
+      Type: AWS::EC2::VPCEndpoint
+      Properties:
+        ServiceName: !Sub "com.amazonaws.${AWS::Region}.ecr.dkr"
+        VpcEndpointType: Interface
+        PrivateDnsEnabled: true
+        SecurityGroupIds:
+          - !Ref ManagedSgTxToolingBaseSecurityGroup
+          - !Ref ManagedSgTxInfrastructureBaseSecurityGroup
+        SubnetIds:
+          - !Ref PrivateSubnetOne
+          - !Ref PrivateSubnetTwo
+          - !Ref PrivateSubnetThree
+        VpcId: !Ref MyVpc
+    EC2Endpoint:
+      Type: AWS::EC2::VPCEndpoint
+      Properties:
+        ServiceName: !Sub "com.amazonaws.${AWS::Region}.ec2"
+        VpcEndpointType: Interface
+        PrivateDnsEnabled: true
+        SecurityGroupIds:
+          - !Ref ManagedSgTxToolingBaseSecurityGroup
+          - !Ref ManagedSgTxInfrastructureBaseSecurityGroup
+        SubnetIds:
+          - !Ref PrivateSubnetOne
+          - !Ref PrivateSubnetTwo
+          - !Ref PrivateSubnetThree
+        VpcId: !Ref MyVpc
+
+    CWLogsEndpoint:
+      Type: AWS::EC2::VPCEndpoint
+      Properties:
+        ServiceName: !Sub "com.amazonaws.${AWS::Region}.logs"
+        VpcEndpointType: Interface
+        PrivateDnsEnabled: true
+        SecurityGroupIds:
+          - !Ref ManagedSgTxToolingBaseSecurityGroup
+          - !Ref ManagedSgTxInfrastructureBaseSecurityGroup
+        SubnetIds:
+          - !Ref PrivateSubnetOne
+          - !Ref PrivateSubnetTwo
+          - !Ref PrivateSubnetThree
+        VpcId: !Ref MyVpc
+
+    EC2AutoScalingEndpoint:
+      Type: AWS::EC2::VPCEndpoint
+      Properties:
+        ServiceName: !Sub "com.amazonaws.${AWS::Region}.autoscaling"
+        VpcEndpointType: Interface
+        PrivateDnsEnabled: true
+        SecurityGroupIds:
+          - !Ref ManagedSgTxToolingBaseSecurityGroup
+          - !Ref ManagedSgTxInfrastructureBaseSecurityGroup
+        SubnetIds:
+          - !Ref PrivateSubnetOne
+          - !Ref PrivateSubnetTwo
+          - !Ref PrivateSubnetThree
+        VpcId: !Ref MyVpc
+
+    STSEndpoint:
+      Type: AWS::EC2::VPCEndpoint
+      Properties:
+        ServiceName: !Sub "com.amazonaws.${AWS::Region}.sts"
+        VpcEndpointType: Interface
+        PrivateDnsEnabled: true
+        SecurityGroupIds:
+          - !Ref ManagedSgTxToolingBaseSecurityGroup
+          - !Ref ManagedSgTxInfrastructureBaseSecurityGroup
+        SubnetIds:
+          - !Ref PrivateSubnetOne
+          - !Ref PrivateSubnetTwo
+          - !Ref PrivateSubnetThree
+        VpcId: !Ref MyVpc
+
+    SSMEndpoint:
+      Type: AWS::EC2::VPCEndpoint
+      Properties:
+        ServiceName: !Sub "com.amazonaws.${AWS::Region}.ssm"
+        VpcEndpointType: Interface
+        PrivateDnsEnabled: true
+        SecurityGroupIds:
+          - !Ref ManagedSgTxToolingBaseSecurityGroup
+          - !Ref ManagedSgTxInfrastructureBaseSecurityGroup
+        SubnetIds:
+          - !Ref PrivateSubnetOne
+          - !Ref PrivateSubnetTwo
+          - !Ref PrivateSubnetThree
+        VpcId: !Ref MyVpc
+
   Outputs:
     vpcId:
       Value: !Ref MyVpc

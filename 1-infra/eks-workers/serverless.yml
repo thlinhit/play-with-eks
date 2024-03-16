@@ -37,6 +37,9 @@ resources:
     AmazonLinuxAMIID:
       Type: String
       Default: ${param:amiId}
+    AMIInstanceType:
+      Type: String
+      Default: ${param:amiIdInstanceType}
     SpotPrice:
       Description: Spot Price (Only Spot market price is charged, up to max of On-Demand price. Value here is only used to prevent EC2 instance launch if Spot market price exceeds this value.)
       Type: Number
@@ -262,7 +265,7 @@ resources:
         AssociatePublicIpAddress: false # https://docs.aws.amazon.com/eks/latest/userguide/eks-optimized-ami.html
         IamInstanceProfile: !Ref NodeInstanceProfile
         ImageId: !Ref AmazonLinuxAMIID
-        InstanceType: t2.small
+        InstanceType: !Ref AMIInstanceType
         SpotPrice: !Ref SpotPrice
         SecurityGroups:
           - !Ref NodeSecurityGroup

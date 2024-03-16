@@ -26,11 +26,26 @@ AWS_PROFILE=acloudguru2 sls bastion:deploy
 ### Get Iam
 ```bash
 EKS_VERSION=1.26
-AWS_PROFILE=acloudguru2 aws ssm get-parameter --name /aws/service/eks/optimized-ami/$EKS_VERSION/amazon-linux-2/recommended/image_id --region us-east-1 --query "Parameter.Value" --output text;
+AWS_PROFILE=acloudguru2 aws ssm get-parameter --name /aws/service/eks/optimized-ami/$EKS_VERSION/amazon-linux-2-arm64/recommended/image_id --region us-east-1 --query "Parameter.Value" --output text;
 ```
 
 ----
-# After deploying EKS Cluster
+# After deploying EKS Cluster (If Private EKS, need to access a node in private subnet and do the following things)
+
+### Download kubectl (Private only)
+```shell
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" 
+```
+upload to s3 and then download from s3 in node
+```shell
+AWS_PROFILE=acloudguru2 aws s3 cp kubectl s3://thlinh-mys3/kubectl
+```
+```shell
+aws s3 cp ${KubectlS3Location} /tmp/kubectl --region ${AWS::Region}
+chmod 755 /tmp/kubectl
+```
+
+
 ### Update Kube config
 As soon as Kubernetes cluster deployment finishes, we need to create ~/.kube/config file, with the following command (please, use the latest awscli):
 ```bash
@@ -38,15 +53,6 @@ AWS_PROFILE=acloudguru2 aws eks update-kubeconfig --region us-east-1 --name my-e
 ```
 * `thlinh-eks-local-eks` is the cluster name
 **ATTENTION**: if you can not connect to the cluster please double-check the ip address in KubernetesClusterMasterFromWorkstationSecurityGroupRule section of serverless.yml
-
-```bash
-AWS_PROFILE=acloudguru2 aws eks get-token --cluster-name my-eks-cluster --region us-east-1 | jq -r '.status.token'
-```
-
-
-```bash
-AWS_PROFILE=acloudguru2 aws eks describe-cluster --name my-eks-cluster --query 'cluster.endpoint' --output text --region us-east-1
-```
 
 ### Install ConfigMap
 ```bash

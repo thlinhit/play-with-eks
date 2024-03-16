@@ -19,3 +19,13 @@ services:
       subnetOne: ${vpc.privateSubnetOneId}
       subnetTwo: ${vpc.privateSubnetTwoId}
       subnetThree: ${vpc.privateSubnetThreeId}
+
+  bastion:
+    path: bastion-host
+    params:
+      vpcId: ${vpc.vpcId}
+      subnetOne: ${vpc.publicSubnetOneId}
+      subnetTwo: ${vpc.publicSubnetTwoId}
+      subnetThree: ${vpc.publicSubnetThreeId}
+      infrastructureBaseSecurityGroup: ${vpc.infrastructureBaseSecurityGroupId}
+      managedSgTxToolingBaseSecurityGroup: ${vpc.managedSgTxToolingBaseSecurityGroup}

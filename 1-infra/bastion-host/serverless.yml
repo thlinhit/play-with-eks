@@ -1,0 +1,92 @@
+service: ${self:custom.servicePrefix}-bastion-host
+frameworkVersion: '3'
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+  servicePrefix: thlinh
+
+provider:
+  stage: local
+  region: us-east-1
+  name: aws
+
+#############
+# RESOURCES #
+#############
+resources:
+  Parameters:
+    vpcId:
+      Type: String
+      Default: ${param:vpcId}
+    PublicSubnetOne:
+      Type: String
+      Default: ${param:subnetOne}
+    PublicSubnetTwo:
+      Type: String
+      Default: ${param:subnetTwo}
+    PublicSubnetThree:
+      Type: String
+      Default: ${param:subnetThree}
+    InfrastructureBaseSecurityGroup:
+      Type: String
+      Default: ${param:infrastructureBaseSecurityGroup}
+    ManagedSgTxToolingBaseSecurityGroup:
+      Type: String
+      Default: ${param:managedSgTxToolingBaseSecurityGroup}
+    AmazonLinuxAMIID:
+      Description: Static reference to latest Amazon Linux 2 AMI
+      Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+      Default: '/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-arm64'
+      AllowedValues:
+        - '/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-arm64'
+    InstanceType:
+      Description: Instance size for the Bastion Host (default - t4g.nano)
+      Type: String
+      AllowedValues:
+        - t4g.nano
+      Default: t4g.nano
+  Resources:
+    BastionASG:
+      Type: AWS::AutoScaling::AutoScalingGroup
+      Properties:
+        AutoScalingGroupName: !Join [ "", [ !Ref "AWS::StackName", "BastionHostASG" ] ]
+        LaunchConfigurationName: !Ref BastionLaunchConfig
+        VPCZoneIdentifier:
+          - !Ref PublicSubnetOne
+          - !Ref PublicSubnetTwo
+          - !Ref PublicSubnetThree
+        MinSize: "1"
+        DesiredCapacity: "1"
+        MaxSize: "1"
+        Tags:
+          - Key: Name
+            Value: !Join [ "", [ !Ref "AWS::StackName", "BastionHost" ] ]
+            PropagateAtLaunch: true
+
+    BastionLaunchConfig:
+      Type: AWS::AutoScaling::LaunchConfiguration
+      Properties:
+        LaunchConfigurationName: !Join [ "", [ !Ref "AWS::StackName", "BastionHostLaunchConfiguration" ] ]
+        AssociatePublicIpAddress: true
+        ImageId: !Ref AmazonLinuxAMIID
+        InstanceType: !Ref InstanceType
+        SecurityGroups:
+          - !Ref BastionSecurityGroup
+
+    BastionSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: Bastion Host Security Group
+        VpcId: !Ref vpcId
+        GroupName: !Join [ "", [ !Ref "AWS::StackName", "BastionHostSecurityGroup" ] ]
+
+    # Security Group Ingress rule for SSH access to Bastion Host
+    BastionSecurityGroupSshIngressRule:
+      Type: AWS::EC2::SecurityGroupIngress
+      Properties:
+        GroupId: !Ref BastionSecurityGroup
+        IpProtocol: "tcp"
+        FromPort: 22
+        ToPort: 22
+        CidrIp: 0.0.0.0/0

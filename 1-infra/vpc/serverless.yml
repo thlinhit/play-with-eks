@@ -391,6 +391,37 @@ resources:
           - !Ref PrivateSubnetThree
         VpcId: !Ref MyVpc
 
+    # Necessary for EC2 node in private subnet can call to public eks endpoint
+    # e.g AWS_PROFILE=acloudguru2 aws eks update-kubeconfig --region us-east-1 --name my-eks-cluster
+    EKSEndpoint:
+      Type: AWS::EC2::VPCEndpoint
+      Properties:
+        ServiceName: !Sub "com.amazonaws.${AWS::Region}.eks"
+        VpcEndpointType: Interface
+        PrivateDnsEnabled: true
+        SecurityGroupIds:
+          - !Ref ManagedSgTxToolingBaseSecurityGroup
+          - !Ref ManagedSgTxInfrastructureBaseSecurityGroup
+        SubnetIds:
+          - !Ref PrivateSubnetOne
+          - !Ref PrivateSubnetTwo
+          - !Ref PrivateSubnetThree
+        VpcId: !Ref MyVpc
+    EKSAuthEndpoint:
+      Type: AWS::EC2::VPCEndpoint
+      Properties:
+        ServiceName: !Sub "com.amazonaws.${AWS::Region}.eks-auth"
+        VpcEndpointType: Interface
+        PrivateDnsEnabled: true
+        SecurityGroupIds:
+          - !Ref ManagedSgTxToolingBaseSecurityGroup
+          - !Ref ManagedSgTxInfrastructureBaseSecurityGroup
+        SubnetIds:
+          - !Ref PrivateSubnetOne
+          - !Ref PrivateSubnetTwo
+          - !Ref PrivateSubnetThree
+        VpcId: !Ref MyVpc
+
   Outputs:
     vpcId:
       Value: !Ref MyVpc

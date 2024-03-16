@@ -29,3 +29,19 @@ services:
       subnetThree: ${vpc.publicSubnetThreeId}
       infrastructureBaseSecurityGroup: ${vpc.infrastructureBaseSecurityGroupId}
       managedSgTxToolingBaseSecurityGroup: ${vpc.managedSgTxToolingBaseSecurityGroup}
+
+  eks-workers:
+    path: eks-workers
+    params:
+      vpcId: ${vpc.vpcId}
+      subnetOne: ${vpc.privateSubnetOneId}
+      subnetTwo: ${vpc.privateSubnetTwoId}
+      subnetThree: ${vpc.privateSubnetThreeId}
+      infrastructureBaseSecurityGroup: ${vpc.infrastructureBaseSecurityGroupId}
+      managedSgTxToolingBaseSecurityGroup: ${vpc.managedSgTxToolingBaseSecurityGroup}
+      amiId: 'ami-0d00c9f7217e4079c'
+      kubernetesClusterName: ${eks.KubernetesClusterName}
+      kubernetesClusterEndpoint: ${eks.KubernetesClusterEndpoint}
+      kubernetesClusterSecurityGroup: ${eks.KubernetesClusterMasterSecurityGroup}
+      kubernetesClusterCertificateAuthorityData: ${eks.KubernetesClusterCertificateAuthorityData}
+      kubernetesCluster: ${eks.KubernetesCluster}

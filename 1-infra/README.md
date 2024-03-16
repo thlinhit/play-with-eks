@@ -34,18 +34,18 @@ AWS_PROFILE=acloudguru2 aws ssm get-parameter --name /aws/service/eks/optimized-
 ### Update Kube config
 As soon as Kubernetes cluster deployment finishes, we need to create ~/.kube/config file, with the following command (please, use the latest awscli):
 ```bash
-AWS_PROFILE=acloudguru2 aws eks update-kubeconfig --region us-east-1 --name thlinh-eks-local-eks
+AWS_PROFILE=acloudguru2 aws eks update-kubeconfig --region us-east-1 --name my-eks-cluster
 ```
 * `thlinh-eks-local-eks` is the cluster name
 **ATTENTION**: if you can not connect to the cluster please double-check the ip address in KubernetesClusterMasterFromWorkstationSecurityGroupRule section of serverless.yml
 
 ```bash
-AWS_PROFILE=acloudguru2 aws eks get-token --cluster-name thlinh-eks-local-eks --region us-east-1 | jq -r '.status.token'
+AWS_PROFILE=acloudguru2 aws eks get-token --cluster-name my-eks-cluster --region us-east-1 | jq -r '.status.token'
 ```
 
 
 ```bash
-AWS_PROFILE=acloudguru2 aws eks describe-cluster --name thlinh-eks-local-eks --query 'cluster.endpoint' --output text --region us-east-1
+AWS_PROFILE=acloudguru2 aws eks describe-cluster --name my-eks-cluster --query 'cluster.endpoint' --output text --region us-east-1
 ```
 
 ### Install ConfigMap
@@ -71,4 +71,12 @@ kubectl get nodes --watch
 
 ```bash
 kubectl get pod --all-namespaces
+```
+
+
+---
+## Copy Kubectl
+```bash
+aws s3 cp s3://thlinh-mys3/kubectl /tmp/kubectl --region us-east-1
+chmod 755 /tmp/kubectl
 ```

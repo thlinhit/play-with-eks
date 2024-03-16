@@ -101,6 +101,8 @@ resources:
       Properties:
         Name: ${self:service}-${self:provider.stage}-eks
         ResourcesVpcConfig:
+          EndpointPublicAccess: false # False if EKS is in private
+          EndpointPrivateAccess: true # True if EKS is in private
           SecurityGroupIds:
             - !Ref KubernetesClusterMasterSecurityGroup
           SubnetIds:
@@ -310,7 +312,7 @@ resources:
     SpotNodeLaunchConfig:
       Type: AWS::AutoScaling::LaunchConfiguration
       Properties:
-        AssociatePublicIpAddress: true # https://docs.aws.amazon.com/eks/latest/userguide/eks-optimized-ami.html
+        AssociatePublicIpAddress: false # https://docs.aws.amazon.com/eks/latest/userguide/eks-optimized-ami.html
         IamInstanceProfile: !Ref NodeInstanceProfile
         ImageId: !Ref AmazonLinuxAMIID
         InstanceType: t2.small
@@ -331,7 +333,40 @@ resources:
             !Sub |
               #!/bin/bash
               set -o xtrace
+              
+              curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" 
+              mv kubectl /tmp/kubectl
+              chmod 755 /tmp/kubectl
+            
+              /tmp/kubectl config set-cluster cfc --server=https://3847199561D79660490921D7A6CACBBC.gr7.us-east-1.eks.amazonaws.com
+              /tmp/kubectl config set clusters.cfc.certificate-authority-data LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURCVENDQWUyZ0F3SUJBZ0lJYkluK1FTZndGcVl3RFFZSktvWklodmNOQVFFTEJRQXdGVEVUTUJFR0ExVUUKQXhNS2EzVmlaWEp1WlhSbGN6QWVGdzB5TkRBek1UVXdOREE0TWpGYUZ3MHpOREF6TVRNd05ERXpNakZhTUJVeApFekFSQmdOVkJBTVRDbXQxWW1WeWJtVjBaWE13Z2dFaU1BMEdDU3FHU0liM0RRRUJBUVVBQTRJQkR3QXdnZ0VLCkFvSUJBUUN2NHhJY0ZsQW1JTWk1NFhrczVFVlFnNlFuR0owMk9NYUNzaXFkMXVNTnlnT0pmbmIyWTFuelVUMzAKNms3Z1dKM296UjdiTE1QQytWQmgwZkdieHlGVDNpbE9mbmFEU3MvQTh4YUEwalJJc2FwTVJjeHVseVEzK05DdQpuWm9TaVpLeXFQOG1qS2tyRDgrL05UTUZTQzg2RDFWRElKaVRoKzNLSjUzaEZGZTRHbDE2Z3VrajJScjI2U0ErCkJlRjNrTWJlcmg0M3BtQWp3UDRKVm1IZEkyTUlPcm0yS2ErYTg5d2ovWXdxL0YrTC9NdER3TmE1L3g3Z2hOZ0UKL1diOHhMZm5yaUx2ditRdTFhb1JEU0NVbzFkTlJVQWVFWVU5NUROTnRhTkxsYkFhaHlVb3o0Z2Q3ekVhS0pFNQptU0JCR2pZc1Zlc3BXZVhZcEl3b3BRUGkrcmpaQWdNQkFBR2pXVEJYTUE0R0ExVWREd0VCL3dRRUF3SUNwREFQCkJnTlZIUk1CQWY4RUJUQURBUUgvTUIwR0ExVWREZ1FXQkJTUlQ4Z29VaEV1Uk5vWE5Dem9vdDAwOVBwY0dUQVYKQmdOVkhSRUVEakFNZ2dwcmRXSmxjbTVsZEdWek1BMEdDU3FHU0liM0RRRUJDd1VBQTRJQkFRQlBYSzZWUVIxRQp1OUNmc2M3RnlOa2o4ZnhKK0JvS0x5eGN4M3Z2RmhOL05rTHZlSkZtQjE1aURMVDQwVWJwZmlQYXcvOU5CRjlYCmRCQkNKMjZZSzRuRDRYMTR4ZzNDNHlVSHh3Qk1UZFErSXMvUVlVejg3bG9lTWJkZUcwVDVmUEYzRzBXRU9vSUkKM0k4cVI2dDByak55OHFtVm1lb0hPOEZFSmxSZWw0RThlZlp4L1BJQUVRSEU0S3NrRlhUY25TSXBXUkdJVXI1WgpBZHBtTFh3UkgzdkJHb0tUWG82b2lpYlZlN29UNU9oT1Q3TGhsRFFDZ2lwVExQV0RLUDc2M0wyYnhzL0pheGM1CkdjdlplMjdubGNNc1BrSlkzZHRxVVR0aUJJNDl6ZFhWWFhxQU1vVzd6M2s5azQ1b0RSYnEyVmxENUtOblczVVEKYThDelFMMmJiYnhUCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+              /tmp/kubectl config set-credentials user --token=k8s-aws-v1.aHR0cHM6Ly9zdHMudXMtZWFzdC0xLmFtYXpvbmF3cy5jb20vP0FjdGlvbj1HZXRDYWxsZXJJZGVudGl0eSZWZXJzaW9uPTIwMTEtMDYtMTUmWC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBUTNFR1IyWjRXVFdVSlRRUiUyRjIwMjQwMzE1JTJGdXMtZWFzdC0xJTJGc3RzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNDAzMTVUMDg0NjM3WiZYLUFtei1FeHBpcmVzPTYwJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCUzQngtazhzLWF3cy1pZCZYLUFtei1TaWduYXR1cmU9OTIzZjdmYmEwMjU2NDM3ZDBkN2RiOTI3MmFmNjQwYWQzMTRlOWJjNDA2Nzg4NjFmZjQ2ZjMwNmZlYWM4NGNjMA
+              /tmp/kubectl config set-context cfc --cluster=cfc --user=user
+              /tmp/kubectl config use-context cfc
+            
+              cat <<EOF >/tmp/aws-auth-cm.yaml
+              apiVersion: v1
+              kind: ConfigMap
+              metadata:
+                name: aws-auth
+                namespace: kube-system
+              data:
+                mapRoles: |
+                  - rolearn: '${NodeInstanceRole.Arn}'
+                    username: system:node:{{EC2PrivateDNSName}}
+                    groups:
+                      - system:bootstrappers
+                      - system:nodes
+              EOF
+            
+              /tmp/kubectl get cm -n kube-system aws-auth
+              if [ $? -ne 0 ]; 
+              then
+                /tmp/kubectl apply -f /tmp/aws-auth-cm.yaml
+              fi
+            
               /etc/eks/bootstrap.sh ${KubernetesCluster}
+            
               /opt/aws/bin/cfn-signal --exit-code $? \
                        --stack  ${AWS::StackName} \
                        --resource NodeGroup  \

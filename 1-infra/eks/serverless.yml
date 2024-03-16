@@ -22,6 +22,9 @@ resources:
     EKSVersion:
       Type: Number
       Default: ${param:eksVersion}
+    EKSClusterName:
+      Type: String
+      Default: ${param:eksClusterName}
     SubnetOne:
       Type: String
       Default: ${param:subnetOne}
@@ -31,23 +34,6 @@ resources:
     SubnetThree:
       Type: String
       Default: ${param:subnetThree}
-    InfrastructureBaseSecurityGroup:
-      Type: String
-      Default: ${param:infrastructureBaseSecurityGroup}
-    ManagedSgTxToolingBaseSecurityGroup:
-      Type: String
-      Default: ${param:managedSgTxToolingBaseSecurityGroup}
-    AmazonLinuxAMIID:
-      Type: String
-      Default: ${param:amiId}
-    SpotPrice:
-      Description: Spot Price (Only Spot market price is charged, up to max of On-Demand price. Value here is only used to prevent EC2 instance launch if Spot market price exceeds this value.)
-      Type: String
-      Default: 1
-    NodeVolumeSize:
-      Type: Number
-      Description: Node volume size
-      Default: 20
   Resources:
     EksKubernetesServiceRole:
       Type: AWS::IAM::Role
@@ -99,7 +85,7 @@ resources:
     KubernetesCluster:
       Type: AWS::EKS::Cluster
       Properties:
-        Name: ${self:service}-${self:provider.stage}-eks
+        Name: !Ref EKSClusterName
         ResourcesVpcConfig:
           EndpointPublicAccess: false # False if EKS is in private
           EndpointPrivateAccess: true # True if EKS is in private
@@ -111,292 +97,6 @@ resources:
             - !Ref SubnetThree
         RoleArn: !GetAtt EksKubernetesServiceRole.Arn
         Version: !Ref EKSVersion
-
-
-    ####################################
-    #  WORKER NODE SECURITY GROUPS
-    ####################################
-    NodeInstanceRole:
-      Type: AWS::IAM::Role
-      Properties:
-        RoleName: EKSWorkerNodeInstanceRole
-        AssumeRolePolicyDocument:
-          Version: '2012-10-17'
-          Statement:
-            - Effect: Allow
-              Principal:
-                Service:
-                  - ec2.amazonaws.com
-              Action:
-                - sts:AssumeRole
-        Path: "/"
-        Policies:
-          - PolicyName: node
-            PolicyDocument:
-              Version: '2012-10-17'
-              Statement:
-                - Effect: Allow
-                  Action:
-                    - ec2:Describe*
-                    - ecr:GetAuthorizationToken
-                    - ecr:BatchCheckLayerAvailability
-                    - ecr:GetDownloadUrlForLayer
-                    - ecr:GetRepositoryPolicy
-                    - ecr:DescribeRepositories
-                    - ecr:ListImages
-                    - ecr:DescribeImages
-                    - ecr:BatchGetImage
-                  Resource: '*'
-          - PolicyName: cni
-            PolicyDocument:
-              Version: '2012-10-17'
-              Statement:
-                - Effect: Allow
-                  Action:
-                    - ec2:DescribeNetworkInterfaces
-                    - ec2:DescribeInstances
-                    - ec2:AttachNetworkInterface
-                    - ec2:CreateNetworkInterface
-                    - ec2:DeleteNetworkInterface
-                    - ec2:DetachNetworkInterface
-                    - ec2:ModifyNetworkInterfaceAttribute
-                    - ec2:AssignPrivateIpAddresses
-                    - ec2:CreateTags
-                    - tag:TagResources
-                  Resource: '*'
-          - PolicyName: eks
-            PolicyDocument:
-              Version: '2012-10-17'
-              Statement:
-                - Effect: Allow
-                  Action:
-                    - eks:DescribeCluster
-                  Resource: '*'
-          - PolicyName: s3-management
-            PolicyDocument:
-              Version: '2012-10-17'
-              Statement:
-                - Effect: Allow
-                  Action:
-                    - s3:PutObject
-                    - s3:GetObject
-                    - s3:ListBucket
-                    - s3:DeleteObject
-                  Resource:
-                    - '*' # Recheck
-                - Effect: Allow
-                  Action:
-                    - s3:HeadBucket
-                  Resource:
-                    - '*'
-          - PolicyName: ClusterAutoscaler
-            PolicyDocument:
-              Version: '2012-10-17'
-              Statement:
-                - Effect: Allow
-                  Action:
-                    - ec2:DescribeRegions
-                    - ec2:DescribeInstances
-                  Resource: '*'
-                - Effect: Allow
-                  Action:
-                    - ecr:GetAuthorizationToken
-                    - ecr:BatchCheckLayerAvailability
-                    - ecr:GetDownloadUrlForLayer
-                    - ecr:GetRepositoryPolicy
-                    - ecr:DescribeRepositories
-                    - ecr:ListImages
-                    - ecr:BatchGetImage
-                  Resource: '*'
-                - Effect: Allow
-                  Action:
-                    - autoscaling:DescribeAutoScalingGroups
-                    - autoscaling:DescribeAutoScalingInstances
-                    - autoscaling:DescribeLaunchConfigurations
-                    - autoscaling:SetDesiredCapacity
-                    - autoscaling:DescribeTags
-                    - autoscaling:TerminateInstanceInAutoScalingGroup
-                  Resource: '*'
-
-    # we need to describe AWS::IAM::InstanceProfile to provide EKS Nodes with appropriate permissions
-    NodeInstanceProfile:
-      Type: AWS::IAM::InstanceProfile
-      Properties:
-        Path: /
-        Roles:
-          - !Ref NodeInstanceRole
-
-    NodeSecurityGroup:
-      Type: AWS::EC2::SecurityGroup
-      Properties:
-        GroupDescription: Security group for all nodes in the EKS cluster
-        VpcId: !Ref vpcId
-        Tags:
-          - Key: Name
-            Value: ${self:service}-${self:provider.stage}-workers-sg
-
-    NodeSecurityGroupIngress:
-      Type: AWS::EC2::SecurityGroupIngress
-      DependsOn: NodeSecurityGroup
-      Properties:
-        Description: Allow node to communicate with each other
-        GroupId: !Ref NodeSecurityGroup
-        SourceSecurityGroupId: !Ref NodeSecurityGroup
-        IpProtocol: '-1'
-        FromPort: 0
-        ToPort: 65535
-
-    NodeSecurityGroupFromWorkstationIngress:
-      Type: AWS::EC2::SecurityGroupIngress
-      DependsOn: NodeSecurityGroup
-      Properties:
-        Description: Allow workstation to connect to EC2 nodes (for debugging)
-        GroupId: !Ref NodeSecurityGroup
-        IpProtocol: tcp
-        FromPort: 22
-        ToPort: 22
-        CidrIp: 10.90.64.0/19
-
-    NodeSecurityGroupFromControlPlaneIngress:
-      Type: AWS::EC2::SecurityGroupIngress
-      DependsOn: NodeSecurityGroup
-      Properties:
-        Description: >-
-          Allow worker Kubelets and pods to receive communication from the cluster
-          control plane
-        GroupId: !Ref NodeSecurityGroup
-        SourceSecurityGroupId: !Ref KubernetesClusterMasterSecurityGroup
-        IpProtocol: tcp
-        FromPort: 1025
-        ToPort: 65535
-    KubernetesClusterMasterSecurityGroupIngressFromNodes:
-      Type: AWS::EC2::SecurityGroupIngress
-      DependsOn: NodeSecurityGroup
-      Properties:
-        Description: >-
-          Allow pods running extension API servers on port 443 to receive
-          communication from cluster control plane
-        GroupId: !Ref KubernetesClusterMasterSecurityGroup
-        SourceSecurityGroupId: !Ref NodeSecurityGroup
-        IpProtocol: tcp
-        FromPort: 443
-        ToPort: 443
-    ControlPlaneEgressToNodeSecurityGroupOn443:
-      Type: AWS::EC2::SecurityGroupEgress
-      Properties:
-        Description: >-
-          Allow the cluster control plane to communicate with pods running
-          extension API servers on port 443
-        GroupId: !Ref KubernetesClusterMasterSecurityGroup
-        DestinationSecurityGroupId: !Ref NodeSecurityGroup
-        IpProtocol: tcp
-        FromPort: 443
-        ToPort: 443
-    ControlPlaneEgressToNodeSecurityGroup:
-      Type: AWS::EC2::SecurityGroupEgress
-      Properties:
-        Description: >-
-          Allow the cluster control plane to communicate with worker Kubelet and
-          pods
-        GroupId: !Ref KubernetesClusterMasterSecurityGroup
-        DestinationSecurityGroupId: !Ref NodeSecurityGroup
-        IpProtocol: tcp
-        FromPort: 1025
-        ToPort: 65535
-
-
-
-    ####################################
-    #  WORKER NODE INSTANCES
-    ####################################
-    SpotNodeLaunchConfig:
-      Type: AWS::AutoScaling::LaunchConfiguration
-      Properties:
-        AssociatePublicIpAddress: false # https://docs.aws.amazon.com/eks/latest/userguide/eks-optimized-ami.html
-        IamInstanceProfile: !Ref NodeInstanceProfile
-        ImageId: !Ref AmazonLinuxAMIID
-        InstanceType: t2.small
-        SpotPrice: !Ref SpotPrice
-        SecurityGroups:
-          - !Ref NodeSecurityGroup
-          - !Ref InfrastructureBaseSecurityGroup
-          - !Ref ManagedSgTxToolingBaseSecurityGroup
-        # Refer: https://repost.aws/knowledge-center/eks-worker-nodes-cluster
-        BlockDeviceMappings:
-          - DeviceName: /dev/xvda
-            Ebs:
-              VolumeSize: !Ref NodeVolumeSize
-              VolumeType: gp2
-              DeleteOnTermination: true
-        UserData:
-          Fn::Base64:
-            !Sub |
-              #!/bin/bash
-              set -o xtrace
-              
-              curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" 
-              mv kubectl /tmp/kubectl
-              chmod 755 /tmp/kubectl
-            
-              /tmp/kubectl config set-cluster cfc --server=https://3847199561D79660490921D7A6CACBBC.gr7.us-east-1.eks.amazonaws.com
-              /tmp/kubectl config set clusters.cfc.certificate-authority-data LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURCVENDQWUyZ0F3SUJBZ0lJYkluK1FTZndGcVl3RFFZSktvWklodmNOQVFFTEJRQXdGVEVUTUJFR0ExVUUKQXhNS2EzVmlaWEp1WlhSbGN6QWVGdzB5TkRBek1UVXdOREE0TWpGYUZ3MHpOREF6TVRNd05ERXpNakZhTUJVeApFekFSQmdOVkJBTVRDbXQxWW1WeWJtVjBaWE13Z2dFaU1BMEdDU3FHU0liM0RRRUJBUVVBQTRJQkR3QXdnZ0VLCkFvSUJBUUN2NHhJY0ZsQW1JTWk1NFhrczVFVlFnNlFuR0owMk9NYUNzaXFkMXVNTnlnT0pmbmIyWTFuelVUMzAKNms3Z1dKM296UjdiTE1QQytWQmgwZkdieHlGVDNpbE9mbmFEU3MvQTh4YUEwalJJc2FwTVJjeHVseVEzK05DdQpuWm9TaVpLeXFQOG1qS2tyRDgrL05UTUZTQzg2RDFWRElKaVRoKzNLSjUzaEZGZTRHbDE2Z3VrajJScjI2U0ErCkJlRjNrTWJlcmg0M3BtQWp3UDRKVm1IZEkyTUlPcm0yS2ErYTg5d2ovWXdxL0YrTC9NdER3TmE1L3g3Z2hOZ0UKL1diOHhMZm5yaUx2ditRdTFhb1JEU0NVbzFkTlJVQWVFWVU5NUROTnRhTkxsYkFhaHlVb3o0Z2Q3ekVhS0pFNQptU0JCR2pZc1Zlc3BXZVhZcEl3b3BRUGkrcmpaQWdNQkFBR2pXVEJYTUE0R0ExVWREd0VCL3dRRUF3SUNwREFQCkJnTlZIUk1CQWY4RUJUQURBUUgvTUIwR0ExVWREZ1FXQkJTUlQ4Z29VaEV1Uk5vWE5Dem9vdDAwOVBwY0dUQVYKQmdOVkhSRUVEakFNZ2dwcmRXSmxjbTVsZEdWek1BMEdDU3FHU0liM0RRRUJDd1VBQTRJQkFRQlBYSzZWUVIxRQp1OUNmc2M3RnlOa2o4ZnhKK0JvS0x5eGN4M3Z2RmhOL05rTHZlSkZtQjE1aURMVDQwVWJwZmlQYXcvOU5CRjlYCmRCQkNKMjZZSzRuRDRYMTR4ZzNDNHlVSHh3Qk1UZFErSXMvUVlVejg3bG9lTWJkZUcwVDVmUEYzRzBXRU9vSUkKM0k4cVI2dDByak55OHFtVm1lb0hPOEZFSmxSZWw0RThlZlp4L1BJQUVRSEU0S3NrRlhUY25TSXBXUkdJVXI1WgpBZHBtTFh3UkgzdkJHb0tUWG82b2lpYlZlN29UNU9oT1Q3TGhsRFFDZ2lwVExQV0RLUDc2M0wyYnhzL0pheGM1CkdjdlplMjdubGNNc1BrSlkzZHRxVVR0aUJJNDl6ZFhWWFhxQU1vVzd6M2s5azQ1b0RSYnEyVmxENUtOblczVVEKYThDelFMMmJiYnhUCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
-              /tmp/kubectl config set-credentials user --token=k8s-aws-v1.aHR0cHM6Ly9zdHMudXMtZWFzdC0xLmFtYXpvbmF3cy5jb20vP0FjdGlvbj1HZXRDYWxsZXJJZGVudGl0eSZWZXJzaW9uPTIwMTEtMDYtMTUmWC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBUTNFR1IyWjRXVFdVSlRRUiUyRjIwMjQwMzE1JTJGdXMtZWFzdC0xJTJGc3RzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNDAzMTVUMDg0NjM3WiZYLUFtei1FeHBpcmVzPTYwJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCUzQngtazhzLWF3cy1pZCZYLUFtei1TaWduYXR1cmU9OTIzZjdmYmEwMjU2NDM3ZDBkN2RiOTI3MmFmNjQwYWQzMTRlOWJjNDA2Nzg4NjFmZjQ2ZjMwNmZlYWM4NGNjMA
-              /tmp/kubectl config set-context cfc --cluster=cfc --user=user
-              /tmp/kubectl config use-context cfc
-            
-              cat <<EOF >/tmp/aws-auth-cm.yaml
-              apiVersion: v1
-              kind: ConfigMap
-              metadata:
-                name: aws-auth
-                namespace: kube-system
-              data:
-                mapRoles: |
-                  - rolearn: '${NodeInstanceRole.Arn}'
-                    username: system:node:{{EC2PrivateDNSName}}
-                    groups:
-                      - system:bootstrappers
-                      - system:nodes
-              EOF
-            
-              /tmp/kubectl get cm -n kube-system aws-auth
-              if [ $? -ne 0 ]; 
-              then
-                /tmp/kubectl apply -f /tmp/aws-auth-cm.yaml
-              fi
-            
-              /etc/eks/bootstrap.sh ${KubernetesCluster}
-            
-              /opt/aws/bin/cfn-signal --exit-code $? \
-                       --stack  ${AWS::StackName} \
-                       --resource NodeGroup  \
-                       --region ${AWS::Region}
-
-    SpotNodeGroup:
-      Type: AWS::AutoScaling::AutoScalingGroup
-      Properties:
-        DesiredCapacity: 1
-        LaunchConfigurationName: !Ref SpotNodeLaunchConfig
-        MinSize: 0
-        MaxSize: 3
-        VPCZoneIdentifier:
-          - !Ref SubnetOne
-        Tags:
-          - Key: Name
-            Value: ${self:service}-${self:provider.stage}-nodes
-            PropagateAtLaunch: true
-          - Key:
-              Fn::Join:
-                - "/"
-                - - "kubernetes.io"
-                  - "cluster"
-                  - "${self:service}-${self:provider.stage}"
-            Value: 'owned'
-            PropagateAtLaunch: 'true'
-      UpdatePolicy:
-        AutoScalingRollingUpdate:
-          MinInstancesInService: 0
-          MaxBatchSize: 1
   Outputs:
     KubernetesClusterName:
       Description: "EKS Cluster Name"
@@ -408,6 +108,3 @@ resources:
     KubernetesClusterCertificateAuthorityData:
       Description: Certificate authority data for your Kubernetes API server
       Value: !GetAtt KubernetesCluster.CertificateAuthorityData
-    KubernetesClusterNodesRoleArn:
-      Description: 'EKS Cluster Nodes Role Arn'
-      Value: !GetAtt NodeInstanceRole.Arn

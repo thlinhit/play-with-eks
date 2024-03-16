@@ -108,3 +108,9 @@ resources:
     KubernetesClusterCertificateAuthorityData:
       Description: Certificate authority data for your Kubernetes API server
       Value: !GetAtt KubernetesCluster.CertificateAuthorityData
+    KubernetesClusterMasterSecurityGroup:
+      Description: Kubernetes Cluster SG
+      Value: !Ref KubernetesClusterMasterSecurityGroup
+    KubernetesCluster:
+      Description: Kubernetes Cluster
+      Value: !Ref KubernetesCluster

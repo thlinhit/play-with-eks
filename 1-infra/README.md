@@ -43,6 +43,8 @@ AWS_PROFILE=acloudguru2 aws ssm get-parameter --name /aws/service/eks/optimized-
 ### Download kubectl (Private only - use X86 - ARM has issue)
 ```shell
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+chmod 755 kubectl
+sudo mv ~/kubectl /usr/local/bin
 ```
 https://kubernetes.io/releases/
 

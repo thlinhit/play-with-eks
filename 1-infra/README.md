@@ -20,6 +20,10 @@ AWS_PROFILE=acloudguru2 sls eks:deploy
 ```
 
 ```bash
+AWS_PROFILE=acloudguru2 sls eks-workers:deploy
+```
+
+```bash
 AWS_PROFILE=acloudguru2 sls bastion:deploy
 ```
 
@@ -36,10 +40,12 @@ AWS_PROFILE=acloudguru2 aws ssm get-parameter --name /aws/service/eks/optimized-
 ----
 # After deploying EKS Cluster (If Private EKS, need to access a node in private subnet and do the following things)
 
-### Download kubectl (Private only)
+### Download kubectl (Private only - use X86 - ARM has issue)
 ```shell
-curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" 
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 ```
+https://kubernetes.io/releases/
+
 upload to s3 and then download from s3 in node
 ```shell
 AWS_PROFILE=acloudguru2 aws s3 cp kubectl s3://thlinh-mys3/kubectl
@@ -62,6 +68,7 @@ AWS_PROFILE=acloudguru2 aws eks update-kubeconfig --region us-east-1 --name my-e
 ```bash
 AWS_PROFILE=acloudguru2 sls info --verbose 
 ```
+Get Arn of role "NodeInstanceRole" or
 Retrieve: `KubernetesClusterNodesRoleArn`
 
 ```bash

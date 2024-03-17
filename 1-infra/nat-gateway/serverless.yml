@@ -19,6 +19,9 @@ resources:
     PublicSubnetOne:
       Type: String
       Default: ${param:subnetOne}
+    PrivateRouteTableId:
+      Type: String
+      Default: ${param:privateRouteTableId}
   Resources:
     EIP:
       Type: 'AWS::EC2::EIP'
@@ -29,3 +32,13 @@ resources:
       Properties:
         AllocationId: !GetAtt EIP.AllocationId
         SubnetId: !Ref PublicSubnetOne
+
+    PrivateRouteToNAT:
+      Type: AWS::EC2::Route
+      DependsOn: NatGateway
+      Properties:
+        RouteTableId: !Ref PrivateRouteTableId
+        DestinationCidrBlock: 0.0.0.0/0
+        # Unsupported PrefixList in AWS::EC2::Route at this time
+        # DestinationPrefixListId: !Ref VPCPrefixList
+        NatGatewayId: !Ref NatGateway

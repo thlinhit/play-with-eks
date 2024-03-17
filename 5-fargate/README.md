@@ -25,7 +25,7 @@ kubectl create namespace myns
 
 ## Create fargate profile
 ```bash
-AWS_PROFILE=acloudguru2 AWS_REGION=us-east-1 eksctl create fargateprofile --cluster my-eks-cluster --name fargate --namespace myns
+eksctl create fargateprofile --cluster my-eks-cluster --name fargate-profile --namespace myns --labels fargate=enable
 ```
 
 

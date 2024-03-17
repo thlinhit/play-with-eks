@@ -30,6 +30,11 @@ services:
       infrastructureBaseSecurityGroup: ${vpc.infrastructureBaseSecurityGroupId}
       managedSgTxToolingBaseSecurityGroup: ${vpc.managedSgTxToolingBaseSecurityGroup}
 
+  nat:
+    path: nat-gateway
+    params:
+      subnetOne: ${vpc.publicSubnetOneId}
+
   eks-workers:
     path: eks-workers
     params:

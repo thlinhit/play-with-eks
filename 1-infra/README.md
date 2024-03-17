@@ -23,6 +23,10 @@ AWS_PROFILE=acloudguru2 sls eks:deploy
 AWS_PROFILE=acloudguru2 sls bastion:deploy
 ```
 
+```bash
+AWS_PROFILE=acloudguru2 sls nat:deploy
+```
+
 ### Get Iam
 ```bash
 EKS_VERSION=1.26

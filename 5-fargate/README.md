@@ -28,6 +28,35 @@ kubectl create namespace myns
 eksctl create fargateprofile --cluster my-eks-cluster --name fargate-profile --namespace myns --labels fargate=enable
 ```
 
+## Get profile
+```bash
+eksctl get fargateprofile --cluster my-eks-cluster -o yaml
+```
+
+
+## Test
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-web
+  namespace: myns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: simple-nginx-app
+  template:
+    metadata:
+      labels:
+        app: simple-nginx-app
+        fargate: enable
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+```
 
 
 ## Resources

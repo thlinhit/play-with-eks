@@ -61,3 +61,8 @@ spec:
 
 ## Resources
 https://www.eksworkshop.com/docs/fundamentals/fargate/enabling/
+
+
+### ISSUE
+Fargate will use the security group of the cluster -> therefore need to add inbound rule to accept traffic from other pods
+https://github.com/aws/containers-roadmap/issues/625

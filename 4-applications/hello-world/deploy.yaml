@@ -3,6 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-deployment
+  namespace: myns
 spec:
   selector:
     matchLabels:
@@ -12,15 +13,17 @@ spec:
     metadata:
       labels:
         app: fastapi
+        fargate: enable
     spec:
       containers:
         - name: fastapi
-          image: '332954233786.dkr.ecr.us-east-1.amazonaws.com/myapp:0.0.1'
+          image: '992382721649.dkr.ecr.us-east-1.amazonaws.com/myapp:0.0.1'
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: fastapi-dev
+  namespace: myns
 spec:
   type: NodePort
   selector:

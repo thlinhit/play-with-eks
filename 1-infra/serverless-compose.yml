@@ -45,8 +45,8 @@ services:
       subnetThree: ${vpc.privateSubnetThreeId}
       infrastructureBaseSecurityGroup: ${vpc.infrastructureBaseSecurityGroupId}
       managedSgTxToolingBaseSecurityGroup: ${vpc.managedSgTxToolingBaseSecurityGroup}
-      amiId: 'ami-01e4e3defef588e6b'
-      amiIdInstanceType: t4g.small
+      amiId: 'ami-0382ff4ed25c48d99'
+      amiIdInstanceType: t2.small
       kubernetesClusterName: ${eks.KubernetesClusterName}
       kubernetesClusterEndpoint: ${eks.KubernetesClusterEndpoint}
       kubernetesClusterSecurityGroup: ${eks.KubernetesClusterMasterSecurityGroup}

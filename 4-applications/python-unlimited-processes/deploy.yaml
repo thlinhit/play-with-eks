@@ -30,7 +30,7 @@ spec:
     app: pynproc
   ports:
     - port: 8080
-      nodePort: 32410
+      nodePort: 32411
       protocol: TCP
       targetPort: 8080
 

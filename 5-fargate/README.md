@@ -66,3 +66,5 @@ https://www.eksworkshop.com/docs/fundamentals/fargate/enabling/
 ### ISSUE
 Fargate will use the security group of the cluster -> therefore need to add inbound rule to accept traffic from other pods
 https://github.com/aws/containers-roadmap/issues/625
+Add to the security group created by eksctl
+e.g `sg-03348403a2258ffdd - eks-cluster-sg-my-eks-cluster-735157785`

@@ -16,8 +16,13 @@ spec:
         fargate: enable
     spec:
       containers:
-        - name: fastapi
+        - name: pynproc
           image: '992382721649.dkr.ecr.us-east-1.amazonaws.com/pynproc:0.0.1'
+      initContainers:
+        - name: init
+          image: alpine:latest
+          command: [ "sh", "-c", "echo 'ulimit -Sn 65535' >> /etc/.shrc && echo 'ulimit -Su 65535' >> /etc/.shrc && sleep 10" ]
+      restartPolicy: Always
 ---
 apiVersion: v1
 kind: Service
@@ -33,4 +38,3 @@ spec:
       nodePort: 32411
       protocol: TCP
       targetPort: 8080
-

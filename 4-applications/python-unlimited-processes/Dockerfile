@@ -1,4 +1,4 @@
-FROM python:3.10-slim-bullseye
+FROM python:3.10-slim
 RUN pip install --upgrade pip
 RUN adduser worker
 USER worker
@@ -7,4 +7,7 @@ ENV PATH="/home/worker/.local/bin:${PATH}"
 COPY ./requirements.txt /home/worker/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /home/worker/requirements.txt
 COPY ./main.py /home/worker/main.py
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080", "--reload"]
+CMD ["/bin/bash", "-c", "echo 'ulimit -Sn 65535' >> ${WORKDIR}/.bashrc && echo 'ulimit -Su 65535' >> ${WORKDIR}/.bashrc && sleep 100"]
+ADD --chown=1000 ./entrypoint.sh /home/worker/entrypoint.sh
+RUN chmod u+x /home/worker/entrypoint.sh
+ENTRYPOINT [ "./entrypoint.sh" ]

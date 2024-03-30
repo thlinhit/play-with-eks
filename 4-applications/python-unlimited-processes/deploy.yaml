@@ -17,11 +17,12 @@ spec:
     spec:
       containers:
         - name: pynproc
-          image: '992382721649.dkr.ecr.us-east-1.amazonaws.com/pynproc:0.0.1'
-      initContainers:
-        - name: init
-          image: alpine:latest
-          command: [ "sh", "-c", "echo 'ulimit -Sn 65535' >> /etc/.shrc && echo 'ulimit -Su 65535' >> /etc/.shrc && sleep 10" ]
+          image: '044737250745.dkr.ecr.us-east-1.amazonaws.com/pynproc:0.0.3'
+#          command: ["/bin/bash", "-c", "echo 'ulimit -Sn 65535' >> /home/worker/.bashrc && echo 'ulimit -Su 65535' >> /home/worker/.bashrc && sleep 100"]
+#      initContainers:
+#        - name: init
+#          image: alpine:latest
+#          command: [ "sh", "-c", "echo 'ulimit -Sn 65535' >> /etc/.shrc && echo 'ulimit -Su 65535' >> /etc/.shrc && sleep 10" ]
       restartPolicy: Always
 ---
 apiVersion: v1

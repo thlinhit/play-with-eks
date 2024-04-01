@@ -9,10 +9,12 @@ AWS_PROFILE=acloudguru2 aws ecr create-repository --repository-name pynproc  --r
 ### Build images
 
 ```bash
-docker build -t pynproc:0.0.3 .
-docker run -p 8080:8080 --rm pynproc:0.0.3
+docker build -t pynproc:0.0.8 .
 ```
-
+```bash
+docker run -p 8080:8080 --rm pynproc:0.0.8
+```
+:
 
 ```bash
 curl -w "dns_resolution: %{time_namelookup}, tcp_established: %{time_connect}, ssl_handshake_done: %{time_appconnect}, TTFB: %{time_starttransfer}\n" -o /dev/null -s "http://54.208.159.100:32410"
@@ -20,15 +22,15 @@ dns_resolution: 0.067, tcp_established: 0.175, ssl_handshake_done: 0.598, TTFB: 
 ```
 
 ```bash
-AWS_PROFILE=acloudguru2 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 044737250745.dkr.ecr.us-east-1.amazonaws.com/pynproc
+AWS_PROFILE=acloudguru2 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 851725166193.dkr.ecr.us-east-1.amazonaws.com/pynproc
 ```
 
 ```bash
-docker tag pynproc:0.0.3 044737250745.dkr.ecr.us-east-1.amazonaws.com/pynproc:0.0.3
+docker tag pynproc:0.0.8 851725166193.dkr.ecr.us-east-1.amazonaws.com/pynproc:0.0.8
 ```
 
 ```bash
-docker push 044737250745.dkr.ecr.us-east-1.amazonaws.com/pynproc:0.0.3
+docker push 851725166193.dkr.ecr.us-east-1.amazonaws.com/pynproc:0.0.8
 ```
 
 ```bash
@@ -36,7 +38,7 @@ kubectl apply -f ./deploy.yaml
 ```
 
 ```bash
-kubectl get pod my-deployment-796c67dfc4-h2ch8 -o jsonpath={.status.hostIP}
+kubectl get pod pynproc-74df4dc577-72b86 -o jsonpath={.status.hostIP}
 ```
 
 Add inbound security group to allow access via port 32410
@@ -60,5 +62,17 @@ Add inbound security group to allow access via port 32410
 ```
 
 
+```bash
+kubectl -nmyns exec -it pynproc-576bc4578b-j79lf -- /bin/bash
+```
 
 
+
+
+check hard limit
+```shell
+ulimit -a -H
+```
+
+Adjusting limits within a container, however, requires privileges not available to the application inside the Docker container and must be done as parameters to the docker run command.
+refs: https://towardsaws.com/how-to-configuring-linux-ulimit-with-docker-and-aws-ecs-599c71f00473

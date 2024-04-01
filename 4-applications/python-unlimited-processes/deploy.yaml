@@ -17,13 +17,23 @@ spec:
     spec:
       containers:
         - name: pynproc
-          image: '044737250745.dkr.ecr.us-east-1.amazonaws.com/pynproc:0.0.3'
-#          command: ["/bin/bash", "-c", "echo 'ulimit -Sn 65535' >> /home/worker/.bashrc && echo 'ulimit -Su 65535' >> /home/worker/.bashrc && sleep 100"]
+          image: '851725166193.dkr.ecr.us-east-1.amazonaws.com/pynproc:0.0.8'
+#          command: ["/bin/bash", "-c", "echo 'ulimit -Sn 65535' >> /root/.bashrc && echo 'ulimit -Su 65535' >> /root/.bashrc && sleep 100 && ./home/worker/entrypoint.sh"]
+#          volumeMounts:
+#            - name: data
+#              mountPath: /home/worker/.bashrc
+##          command: ["/bin/bash", "-c", "echo 'ulimit -Sn 65535' >> /home/worker/.bashrc && echo 'ulimit -Su 65535' >> /home/worker/.bashrc && sleep 100"]
 #      initContainers:
 #        - name: init
-#          image: alpine:latest
-#          command: [ "sh", "-c", "echo 'ulimit -Sn 65535' >> /etc/.shrc && echo 'ulimit -Su 65535' >> /etc/.shrc && sleep 10" ]
+#          image: ubuntu:18.04
+#          command: ["/bin/bash", "-c", "adduser worker --disabled-password --gecos \"\" && echo 'ulimit -Sn 65535' >> /home/worker/.bashrc && echo 'ulimit -Su 65535' >> /home/worker/.bashrc && sleep 100"]
+#          volumeMounts:
+#            - name: data
+#              mountPath: /home
       restartPolicy: Always
+#      volumes:
+#        - name: data
+#          emptyDir: { }
 ---
 apiVersion: v1
 kind: Service

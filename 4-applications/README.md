@@ -23,6 +23,6 @@ fastapi-dev   10.90.73.186:8080   16m
 ```
 curl via nodePort 8080
 ```shell
-kubectl -nmyns exec mycurlpod -- curl -v 10.90.73.186:8080
-kubectl -nmyns exec mycurlpod -- curl -v 10-90-74-191.pynproc-dev.myns.svc.cluster.local:8080
+kubectl -nmyns exec mycurlpod -- curl -v 10.90.75.78:8080
+kubectl -nmyns exec mycurlpod -- curl -v 10-90-77-89.pynproc-dev.myns.svc.cluster.local:8080
 ```

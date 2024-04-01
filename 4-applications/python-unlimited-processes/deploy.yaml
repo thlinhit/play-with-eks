@@ -17,8 +17,8 @@ spec:
     spec:
       containers:
         - name: pynproc
-          image: '851725166193.dkr.ecr.us-east-1.amazonaws.com/pynproc:0.0.8'
-#          command: ["/bin/bash", "-c", "echo 'ulimit -Sn 65535' >> /root/.bashrc && echo 'ulimit -Su 65535' >> /root/.bashrc && sleep 100 && ./home/worker/entrypoint.sh"]
+          image: '381492228201.dkr.ecr.us-east-1.amazonaws.com/pynproc:0.0.3'
+#          command: ["/bin/bash", "-c", "sleep 100 && ./home/worker/entrypoint.sh"]
 #          volumeMounts:
 #            - name: data
 #              mountPath: /home/worker/.bashrc

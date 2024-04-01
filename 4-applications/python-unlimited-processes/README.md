@@ -9,10 +9,10 @@ AWS_PROFILE=acloudguru2 aws ecr create-repository --repository-name pynproc  --r
 ### Build images
 
 ```bash
-docker build -t pynproc:0.0.8 .
+docker build -t pynproc:0.0.3 .
 ```
 ```bash
-docker run -p 8080:8080 --rm pynproc:0.0.8
+docker run -p 8080:8080 --rm pynproc:0.0.3
 ```
 :
 
@@ -22,15 +22,15 @@ dns_resolution: 0.067, tcp_established: 0.175, ssl_handshake_done: 0.598, TTFB: 
 ```
 
 ```bash
-AWS_PROFILE=acloudguru2 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 851725166193.dkr.ecr.us-east-1.amazonaws.com/pynproc
+AWS_PROFILE=acloudguru2 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 381492228201.dkr.ecr.us-east-1.amazonaws.com/pynproc
 ```
 
 ```bash
-docker tag pynproc:0.0.8 851725166193.dkr.ecr.us-east-1.amazonaws.com/pynproc:0.0.8
+docker tag pynproc:0.0.3 381492228201.dkr.ecr.us-east-1.amazonaws.com/pynproc:0.0.3
 ```
 
 ```bash
-docker push 851725166193.dkr.ecr.us-east-1.amazonaws.com/pynproc:0.0.8
+docker push 381492228201.dkr.ecr.us-east-1.amazonaws.com/pynproc:0.0.3
 ```
 
 ```bash

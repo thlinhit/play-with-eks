@@ -1,5 +1,10 @@
 FROM python:3.10-slim
 RUN pip install --upgrade pip
+
+RUN echo 'ulimit -Sn 65535' >> /.bashrc
+RUN echo 'ulimit -Su 65535' >> /.bashrc
+RUN chmod u+x /.bashrc
+
 RUN adduser worker
 USER worker
 WORKDIR /home/worker

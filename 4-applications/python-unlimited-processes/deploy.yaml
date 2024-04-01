@@ -17,23 +17,8 @@ spec:
     spec:
       containers:
         - name: pynproc
-          image: '381492228201.dkr.ecr.us-east-1.amazonaws.com/pynproc:0.0.3'
-#          command: ["/bin/bash", "-c", "sleep 100 && ./home/worker/entrypoint.sh"]
-#          volumeMounts:
-#            - name: data
-#              mountPath: /home/worker/.bashrc
-##          command: ["/bin/bash", "-c", "echo 'ulimit -Sn 65535' >> /home/worker/.bashrc && echo 'ulimit -Su 65535' >> /home/worker/.bashrc && sleep 100"]
-#      initContainers:
-#        - name: init
-#          image: ubuntu:18.04
-#          command: ["/bin/bash", "-c", "adduser worker --disabled-password --gecos \"\" && echo 'ulimit -Sn 65535' >> /home/worker/.bashrc && echo 'ulimit -Su 65535' >> /home/worker/.bashrc && sleep 100"]
-#          volumeMounts:
-#            - name: data
-#              mountPath: /home
+          image: '381492228201.dkr.ecr.us-east-1.amazonaws.com/pynproc:0.0.1'
       restartPolicy: Always
-#      volumes:
-#        - name: data
-#          emptyDir: { }
 ---
 apiVersion: v1
 kind: Service

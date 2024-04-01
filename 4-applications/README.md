@@ -11,7 +11,6 @@ kubectl -nmyns exec mycurlpod -- nslookup 10.90.73.177
 ```
 
 
-### On EC2 Node
 ```shell
 kubectl get endpoints pynproc-dev -nmyns
 

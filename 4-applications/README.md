@@ -1,6 +1,3 @@
-
-## How to curl the pod in private subnet
-
 ### Install a pod for executing curl purpose
 ```shell
 kubectl -nmyns run mycurlpod --image=curlimages/curl -i --tty -- sh
